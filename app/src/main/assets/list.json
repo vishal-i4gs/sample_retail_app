@@ -1,0 +1,557 @@
+[
+  {
+    "brand": "Ashirwad",
+    "name": "Atta-Whole Wheat",
+    "id": "item1",
+    "type": "flour",
+    "subItems" : [
+      {
+        "name": "10kgs",
+        "price": 140
+      },
+      {
+        "name": "5kgs",
+        "price": 130
+      },
+      {
+        "name": "2kgs",
+        "price": 110
+      },
+      {
+        "name": "1kg",
+        "price": 100
+      }
+    ],
+    "quantities": [
+      10,
+      5,
+      2,
+      1
+    ],
+    "measurement": "kg",
+    "price": 140
+  },
+  {
+    "brand": "BB Royal",
+    "name": "Maida",
+    "id": "item2",
+    "type": "flour",
+    "subItems" : [
+      {
+        "name": "10kgs",
+        "price": 140
+      },
+      {
+        "name": "5kgs",
+        "price": 140
+      },
+      {
+        "name": "2kgs",
+        "price": 140
+      },
+      {
+        "name": "1kg",
+        "price": 140
+      }
+    ],
+    "quantities": [
+      1,
+      2,
+      0.5
+    ],
+    "measurement": "kg",
+    "price": 130
+  },
+  {
+    "brand": "BB Royal",
+    "name": "Wheat Flour - Chakki Atta",
+    "id": "item3",
+    "type": "flour",
+    "subItems" : [
+      {
+        "name": "10kgs",
+        "price": 140
+      },
+      {
+        "name": "5kgs",
+        "price": 140
+      },
+      {
+        "name": "2kgs",
+        "price": 140
+      },
+      {
+        "name": "1kg",
+        "price": 140
+      }
+    ],
+    "quantities": [
+      5,
+      1,
+      10,
+      2
+    ],
+    "measurement": "kg",
+    "price": 110
+  },
+  {
+    "brand": "Ashirwad",
+    "name": "Multigrains Atta",
+    "id": "item4",
+    "type": "flour",
+    "subItems" : [
+      {
+        "name": "10kgs",
+        "price": 140
+      },
+      {
+        "name": "5kgs",
+        "price": 140
+      },
+      {
+        "name": "2kgs",
+        "price": 140
+      },
+      {
+        "name": "1kg",
+        "price": 140
+      }
+    ],
+    "quantities": [
+      5,
+      1
+    ],
+    "measurement": "kg",
+    "price": 100
+  },
+  {
+    "brand": "BB Popular",
+    "name": "Moong Daal",
+    "id": "item5",
+    "type": "pulses",
+    "subItems" : [
+      {
+        "name": "10kgs",
+        "price": 140
+      },
+      {
+        "name": "5kgs",
+        "price": 140
+      },
+      {
+        "name": "2kgs",
+        "price": 140
+      },
+      {
+        "name": "1kg",
+        "price": 140
+      }
+    ],
+    "quantities": [
+      2,
+      1,
+      0.5
+    ],
+    "measurement": "kg",
+    "price": 170
+  },
+  {
+    "brand": "BB Popular",
+    "name": "Toor Daal",
+    "id": "item5",
+    "type": "pulses",
+    "subItems" : [
+      {
+        "name": "10kgs",
+        "price": 140
+      },
+      {
+        "name": "5kgs",
+        "price": 140
+      },
+      {
+        "name": "2kgs",
+        "price": 140
+      },
+      {
+        "name": "1kg",
+        "price": 140
+      }
+    ],
+    "quantities": [
+      5,
+      1,
+      0.5,
+      2
+    ],
+    "measurement": "kg",
+    "price": 130
+  },
+  {
+    "brand": "BB Royal",
+    "name": "Fried Gram/Bengal Gram",
+    "id": "item6",
+    "type": "pulses",
+    "subItems" : [
+      {
+        "name": "10kgs",
+        "price": 140
+      },
+      {
+        "name": "5kgs",
+        "price": 140
+      },
+      {
+        "name": "2kgs",
+        "price": 140
+      },
+      {
+        "name": "1kg",
+        "price": 140
+      }
+    ],
+    "quantities": [
+      1,
+      0.5
+    ],
+    "measurement": "kg",
+    "price": 190
+  },
+  {
+    "brand": "Saffola",
+    "name": "Gold - Pro Healthy LifeStyle Edible Oil",
+    "id": "item7",
+    "type": "oil",
+    "subItems" : [
+      {
+        "name": "10kgs",
+        "price": 140
+      },
+      {
+        "name": "5kgs",
+        "price": 140
+      },
+      {
+        "name": "2kgs",
+        "price": 140
+      },
+      {
+        "name": "1kg",
+        "price": 140
+      }
+    ],
+    "quantities": [
+      1,
+      2,
+      5
+    ],
+    "measurement": "l",
+    "price": 200
+  },
+  {
+    "brand": "Idhayam",
+    "name": "Oil - Gingelly",
+    "id": "item8",
+    "type": "oil",
+    "subItems" : [
+      {
+        "name": "10kgs",
+        "price": 140
+      },
+      {
+        "name": "5kgs",
+        "price": 140
+      },
+      {
+        "name": "2kgs",
+        "price": 140
+      },
+      {
+        "name": "1kg",
+        "price": 140
+      }
+    ],
+    "quantities": [
+      0.5,
+      1
+    ],
+    "measurement": "l",
+    "price": 240
+  },
+  {
+    "brand": "Nadini",
+    "name": "Pure Cow Ghee",
+    "id": "item9",
+    "type": "ghee",
+    "subItems" : [
+      {
+        "name": "10kgs",
+        "price": 140
+      },
+      {
+        "name": "5kgs",
+        "price": 140
+      },
+      {
+        "name": "2kgs",
+        "price": 140
+      },
+      {
+        "name": "1kg",
+        "price": 140
+      }
+    ],
+    "quantities": [
+      0.5,
+      1,
+      0.2
+    ],
+    "measurement": "l",
+    "price": 180
+  },
+  {
+    "brand": "Fresho",
+    "name": "Pure Desi Ghee",
+    "id": "item10",
+    "type": "ghee",
+    "subItems" : [
+      {
+        "name": "10kgs",
+        "price": 140
+      },
+      {
+        "name": "5kgs",
+        "price": 140
+      },
+      {
+        "name": "2kgs",
+        "price": 140
+      },
+      {
+        "name": "1kg",
+        "price": 140
+      }
+    ],
+    "quantities": [
+      0.5,
+      1,
+      0.2
+    ],
+    "measurement": "l",
+    "price": 100
+  },
+  {
+    "brand": "Tata Salt",
+    "name": "Iodized",
+    "id": "item11",
+    "type": "salt",
+    "subItems" : [
+      {
+        "name": "10kgs",
+        "price": 140
+      },
+      {
+        "name": "5kgs",
+        "price": 140
+      },
+      {
+        "name": "2kgs",
+        "price": 140
+      },
+      {
+        "name": "1kg",
+        "price": 140
+      }
+    ],
+    "quantities": [
+      1
+    ],
+    "measurement": "kg",
+    "price": 135
+  },
+  {
+    "brand": "Tata Salt",
+    "name": "Lite",
+    "id": "item12",
+    "type": "salt",
+    "subItems" : [
+      {
+        "name": "10kgs",
+        "price": 140
+      },
+      {
+        "name": "5kgs",
+        "price": 140
+      },
+      {
+        "name": "2kgs",
+        "price": 140
+      },
+      {
+        "name": "1kg",
+        "price": 140
+      }
+    ],
+    "quantities": [
+      1
+    ],
+    "measurement": "kg",
+    "price": 120
+  },
+  {
+    "brand": "BB Popular",
+    "name": "Sugar",
+    "id": "item13",
+    "type": "sugar",
+    "subItems" : [
+      {
+        "name": "10kgs",
+        "price": 140
+      },
+      {
+        "name": "5kgs",
+        "price": 140
+      },
+      {
+        "name": "2kgs",
+        "price": 140
+      },
+      {
+        "name": "1kg",
+        "price": 140
+      }
+    ],
+    "quantities": [
+      5,
+      1,
+      2
+    ],
+    "measurement": "kg",
+    "price": 115
+  },
+  {
+    "brand": "BB Royal",
+    "name": "Sugar",
+    "id": "item14",
+    "type": "sugar",
+    "subItems" : [
+      {
+        "name": "10kgs",
+        "price": 140
+      },
+      {
+        "name": "5kgs",
+        "price": 140
+      },
+      {
+        "name": "2kgs",
+        "price": 140
+      },
+      {
+        "name": "1kg",
+        "price": 140
+      }
+    ],
+    "quantities": [
+      5,
+      1,
+      2
+    ],
+    "measurement": "kg",
+    "price": 180
+  },
+  {
+    "brand": "BB Royal",
+    "name": "Cumin/Jeera",
+    "id": "item15",
+    "type": "spices",
+    "subItems" : [
+      {
+        "name": "10kgs",
+        "price": 140
+      },
+      {
+        "name": "5kgs",
+        "price": 140
+      },
+      {
+        "name": "2kgs",
+        "price": 140
+      },
+      {
+        "name": "1kg",
+        "price": 140
+      }
+    ],
+    "quantities": [
+      0.05,
+      0.2,
+      0.5,
+      1
+    ],
+    "measurement": "kg",
+    "price": 110
+  },
+  {
+    "brand": "BB Popular",
+    "name": "Black Pepper/Kali Mirch",
+    "id": "item16",
+    "subItems" : [
+      {
+        "name": "10kgs",
+        "price": 140
+      },
+      {
+        "name": "5kgs",
+        "price": 140
+      },
+      {
+        "name": "2kgs",
+        "price": 140
+      },
+      {
+        "name": "1kg",
+        "price": 140
+      }
+    ],
+    "type": "spices",
+    "quantities": [
+      0.05,
+      0.2,
+      0.1
+    ],
+    "measurement": "kg",
+    "price": 175
+  },
+  {
+    "brand": "BB Royal",
+    "name": "Mustard/Rai Small",
+    "id": "item17",
+    "subItems" : [
+      {
+        "name": "10kgs",
+        "price": 140
+      },
+      {
+        "name": "5kgs",
+        "price": 140
+      },
+      {
+        "name": "2kgs",
+        "price": 140
+      },
+      {
+        "name": "1kg",
+        "price": 140
+      }
+    ],
+    "type": "spices",
+    "quantities": [
+      1,
+      0.1,
+      0.5
+    ],
+    "measurement": "kg",
+    "price": 175
+  }
+]
