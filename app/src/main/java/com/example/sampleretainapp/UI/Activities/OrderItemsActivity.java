@@ -53,6 +53,8 @@ public class OrderItemsActivity extends AppCompatActivity {
     }
 
     private void updateOrderItem(OrderItem orderItem) {
+        totalCost.setText("");
+        totalSave.setVisibility(View.GONE);
         int sum = 0;
         int sumWithoutDiscount = 0;
         for (CartItem cartItem : orderItem.orderItems) {
