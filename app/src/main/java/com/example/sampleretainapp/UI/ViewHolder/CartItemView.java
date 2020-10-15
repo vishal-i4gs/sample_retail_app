@@ -11,7 +11,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.sampleretainapp.Model.CartItem;
 import com.example.sampleretainapp.Model.Item;
-import com.example.sampleretainapp.Model.SubItem;
 import com.example.sampleretainapp.R;
 import com.example.sampleretainapp.UI.ItemClickListener;
 
@@ -34,23 +33,23 @@ public class CartItemView extends RecyclerView.ViewHolder {
         brandName = itemView.findViewById(R.id.brand_name);
         itemName = itemView.findViewById(R.id.item_name);
         quantities = itemView.findViewById(R.id.item_quantities);
-        quantities.setOnClickListener(view -> {
-            AlertDialog.Builder builderSingle =
-                    new AlertDialog.Builder(itemView.getContext());
-            builderSingle.setTitle("Select One Name:-");
-            final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(
-                    itemView.getContext(),
-                    android.R.layout.select_dialog_singlechoice);
-            for (SubItem subItem : item.subItems) {
-                arrayAdapter.add(subItem.name);
-            }
-            builderSingle.setNegativeButton("cancel", (dialog, which) -> dialog.dismiss());
-
-            builderSingle.setAdapter(arrayAdapter, (dialog, which) -> {
-                itemClickListener.subItemIndexChanged(which, getAdapterPosition());
-            });
-            builderSingle.show();
-        });
+//        quantities.setOnClickListener(view -> {
+//            AlertDialog.Builder builderSingle =
+//                    new AlertDialog.Builder(itemView.getContext());
+//            builderSingle.setTitle("Select One Name:-");
+//            final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(
+//                    itemView.getContext(),
+//                    android.R.layout.select_dialog_singlechoice);
+//            for (SubItem subItem : item.subItems) {
+//                arrayAdapter.add(subItem.name);
+//            }
+//            builderSingle.setNegativeButton("cancel", (dialog, which) -> dialog.dismiss());
+//
+//            builderSingle.setAdapter(arrayAdapter, (dialog, which) -> {
+//                itemClickListener.subItemIndexChanged(which, getAdapterPosition());
+//            });
+//            builderSingle.show();
+//        });
         addItem = itemView.findViewById(R.id.item_add);
         addItem.setOnClickListener(view -> itemClickListener.addItem(getAdapterPosition()));
         removeItem = itemView.findViewById(R.id.item_remove);
@@ -59,14 +58,13 @@ public class CartItemView extends RecyclerView.ViewHolder {
         price = itemView.findViewById(R.id.item_price);
     }
 
-    public void setData(Item listItem, CartItem item, int subItemIndex) {
+    public void setData(Item listItem, CartItem item) {
         this.item = listItem;
-        brandName.setText(listItem.brand);
         itemName.setText(listItem.name);
-        quantities.setText(listItem.subItems.get(subItemIndex).name);
-        currentNumber.setText("0");
+        quantities.setText(listItem.value+" "+listItem.unit);
+        currentNumber.setText("0");;
         String priceString = String.format(Locale.ENGLISH, "Rs %.1f",
-                listItem.subItems.get(subItemIndex).price);
+                listItem.price);
         price.setText(priceString);
         if (item != null) {
             currentNumber.setText(String.format(Locale.ENGLISH, "%d",

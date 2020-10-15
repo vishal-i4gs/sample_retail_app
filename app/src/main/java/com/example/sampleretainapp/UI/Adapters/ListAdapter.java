@@ -1,4 +1,4 @@
-package com.example.sampleretainapp.UI;
+package com.example.sampleretainapp.UI.Adapters;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,8 +9,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.sampleretainapp.Model.Item;
 import com.example.sampleretainapp.R;
+import com.example.sampleretainapp.UI.ItemClickListener;
 import com.example.sampleretainapp.UI.ViewHolder.ItemView;
-import com.example.sampleretainapp.ViewModel.MainActivityViewModel;
+import com.example.sampleretainapp.UI.ViewModel.MainActivityViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,16 +19,19 @@ import java.util.List;
 public class ListAdapter extends
         RecyclerView.Adapter<RecyclerView.ViewHolder> implements ItemClickListener {
 
-    private MainActivityViewModel mainActivityViewModel;
     private List<Item> list = new ArrayList<>();
     ArrayList<ItemView> myViewHolders = new ArrayList<>();
     ArrayList<Integer> currentListItemSelection = new ArrayList<>();
 
-    ListAdapter(MainActivityViewModel mainActivityViewModel) {
+    private MainActivityViewModel mainActivityViewModel;
+    private ItemClickListener itemClickListener;
+
+    public ListAdapter(MainActivityViewModel mainActivityViewModel, ItemClickListener itemClickListener) {
         this.mainActivityViewModel = mainActivityViewModel;
+        this.itemClickListener = itemClickListener;
     }
 
-    void setList(List<Item> list) {
+    public void setList(List<Item> list) {
         this.list = list;
         for (int i = 0; i < list.size(); i++) {
             currentListItemSelection.add(0);
@@ -49,10 +53,7 @@ public class ListAdapter extends
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         ItemView viewHolder = (ItemView) holder;
         viewHolder.setData(list.get(position),
-                mainActivityViewModel.getCartItem(
-                        currentListItemSelection.get(position),
-                        list.get(position)),
-                currentListItemSelection.get(position));
+                mainActivityViewModel.getCartItem(list.get(position)),mainActivityViewModel.getOfferItem(list.get(position)));
         if (myViewHolders.size() > position) {
             myViewHolders.remove(position);
         }
@@ -65,23 +66,18 @@ public class ListAdapter extends
     }
 
     @Override
+    public void itemClicked(int position) {
+        this.itemClickListener.itemClicked(list.get(position));
+    }
+
+    @Override
     public void addItem(int position) {
-        mainActivityViewModel.addItem(currentListItemSelection.get(position),
-                list.get(position));
-        notifyItemChanged(position);
+        mainActivityViewModel.addItem(list.get(position),mainActivityViewModel.getOfferItem(list.get(position)));
     }
 
     @Override
     public void removeItem(int position) {
-        mainActivityViewModel.removeItem(currentListItemSelection.get(position),
-                list.get(position));
-        notifyItemChanged(position);
-    }
-
-    @Override
-    public void subItemIndexChanged(int subIndex, int position) {
-        currentListItemSelection.set(position, subIndex);
-        notifyItemChanged(position);
+        mainActivityViewModel.removeItem(list.get(position));
     }
 
 }

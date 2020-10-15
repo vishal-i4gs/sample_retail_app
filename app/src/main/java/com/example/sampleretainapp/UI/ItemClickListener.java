@@ -3,9 +3,15 @@ package com.example.sampleretainapp.UI;
 import com.example.sampleretainapp.Model.Item;
 
 public interface ItemClickListener {
-    void addItem(int position);
+    default void addItem(int position) {
+    }
 
-    void removeItem(int position);
+    default void removeItem(int position) {
+    }
 
-    void subItemIndexChanged(int subIndex, int index);
+    default void itemClicked(int position) {
+    }
+
+    default void itemClicked(Item item) {
+    }
 }

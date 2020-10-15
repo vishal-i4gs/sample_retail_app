@@ -1,4 +1,4 @@
-package com.example.sampleretainapp.UI;
+package com.example.sampleretainapp.UI.Adapters;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,9 +9,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.sampleretainapp.Model.CartItem;
 import com.example.sampleretainapp.R;
-import com.example.sampleretainapp.UI.ViewHolder.CartItemView;
+import com.example.sampleretainapp.UI.ItemClickListener;
 import com.example.sampleretainapp.UI.ViewHolder.ItemView;
-import com.example.sampleretainapp.ViewModel.MainActivityViewModel;
+import com.example.sampleretainapp.UI.ViewModel.MainActivityViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,15 +20,16 @@ public class CartAdapter extends
         RecyclerView.Adapter<RecyclerView.ViewHolder> implements ItemClickListener {
 
     private MainActivityViewModel mainActivityViewModel;
+    private ItemClickListener itemClickListener;
     private List<CartItem> list = new ArrayList<>();
-    ArrayList<CartItemView> myViewHolders = new ArrayList<>();
     ArrayList<Integer> currentListItemSelection = new ArrayList<>();
 
-    CartAdapter(MainActivityViewModel mainActivityViewModel) {
+    public CartAdapter(MainActivityViewModel mainActivityViewModel, ItemClickListener itemClickListener) {
         this.mainActivityViewModel = mainActivityViewModel;
+        this.itemClickListener = itemClickListener;
     }
 
-    void setList(List<CartItem> list) {
+    public void setList(List<CartItem> list) {
         this.list = list;
         for (int i = 0; i < list.size(); i++) {
             currentListItemSelection.add(0);
@@ -41,20 +42,15 @@ public class CartAdapter extends
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View retailItem = LayoutInflater
                 .from(parent.getContext()).inflate(
-                        R.layout.retail_cart_item,
+                        R.layout.retail_item,
                         parent, false);
-        return new CartItemView(retailItem, this);
+        return new ItemView(retailItem, this);
     }
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        CartItemView viewHolder = (CartItemView) holder;
-        viewHolder.setData(list.get(position).parentItem, list.get(position),
-                list.get(position).subItemIndex);
-        if (myViewHolders.size() > position) {
-            myViewHolders.remove(position);
-        }
-        myViewHolders.add(position, viewHolder);
+        ItemView viewHolder = (ItemView) holder;
+        viewHolder.setData(list.get(position), list.get(position).offerItem);
     }
 
     @Override
@@ -64,22 +60,17 @@ public class CartAdapter extends
 
     @Override
     public void addItem(int position) {
-        mainActivityViewModel.addItem(list.get(position).subItemIndex,
-                list.get(position).parentItem);
-        notifyItemChanged(position);
+        mainActivityViewModel.addItem(list.get(position).item,mainActivityViewModel.getOfferItem(list.get(position).item));
     }
 
     @Override
     public void removeItem(int position) {
-        mainActivityViewModel.removeItem(list.get(position).subItemIndex,
-                list.get(position).parentItem);
-        notifyItemChanged(position);
+        mainActivityViewModel.removeItem(list.get(position).item);
     }
 
     @Override
-    public void subItemIndexChanged(int subIndex, int position) {
-        currentListItemSelection.set(position, subIndex);
-        notifyItemChanged(position);
+    public void itemClicked(int position) {
+        itemClickListener.itemClicked(list.get(position).item);
     }
 
 }
