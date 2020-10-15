@@ -4,15 +4,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".UI.Activities.SearchListActivity">
+    tools:context=".UI.Activities.CartActivity">
 
     <TextView
         android:id="@+id/order_empty_text_view"
         android:gravity="center"
         android:padding="16dp"
-        android:visibility="gone"
         android:textAppearance="@style/TextAppearance.MaterialComponents.Headline5"
-        android:text="Search list empty"
+        android:text="Order list empty"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 

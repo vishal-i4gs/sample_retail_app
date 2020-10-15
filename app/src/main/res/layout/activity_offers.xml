@@ -4,17 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".UI.Activities.SearchListActivity">
-
-    <TextView
-        android:id="@+id/order_empty_text_view"
-        android:gravity="center"
-        android:padding="16dp"
-        android:visibility="gone"
-        android:textAppearance="@style/TextAppearance.MaterialComponents.Headline5"
-        android:text="Search list empty"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+    tools:context=".UI.Activities.CartActivity">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/list_item_view"
@@ -46,7 +36,7 @@
         android:elevation="8dp"
         android:gravity="center"
         android:text="0"
-        android:textColor="@color/colorFabIcon"
+        android:textColor="#000000"
         android:textSize="10sp"
         app:layout_constraintEnd_toEndOf="@id/fab"
         app:layout_constraintTop_toTopOf="@id/fab" />
