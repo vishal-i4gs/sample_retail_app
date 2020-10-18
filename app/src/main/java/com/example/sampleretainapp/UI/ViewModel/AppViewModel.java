@@ -1,0 +1,101 @@
+package com.example.sampleretainapp.UI.ViewModel;
+
+import android.app.Application;
+import android.content.Context;
+
+import androidx.annotation.NonNull;
+import androidx.lifecycle.AndroidViewModel;
+import androidx.lifecycle.LiveData;
+
+import com.example.sampleretainapp.App;
+import com.example.sampleretainapp.Model.CartItemOffer;
+import com.example.sampleretainapp.Model.CategoryItem;
+import com.example.sampleretainapp.Model.Item;
+import com.example.sampleretainapp.Model.ItemOfferCart;
+import com.example.sampleretainapp.Model.OfferItemCart;
+import com.example.sampleretainapp.Model.OrderItem;
+import com.example.sampleretainapp.Repository;
+
+import java.util.HashMap;
+import java.util.List;
+
+public class MainActivityViewModel extends AndroidViewModel {
+
+    private static final String TAG = MainActivityViewModel.class.getSimpleName();
+
+    private Repository mRepository;
+    private String currentSearchTerm;
+
+    public MainActivityViewModel(@NonNull Application application) {
+        super(application);
+        mRepository = ((App) application).getRepository();
+    }
+
+    //Functions/Methods related to items.
+    public LiveData<List<ItemOfferCart>> getItems() {
+        return mRepository.getItems();
+    }
+    public LiveData<ItemOfferCart> getItemForId(String id) {
+        return mRepository.getItemForId(id);
+    }
+
+
+    //Functions/Methods related to offers.
+    public LiveData<List<OfferItemCart>> getOfferItems() {
+        return mRepository.getOfferItems();
+    }
+
+
+    //Functions/Methods related to cart.
+    public LiveData<List<CartItemOffer>> getCartItems() {
+        return mRepository.getCartItems();
+    }
+    public void clearCart() {
+        mRepository.clearCart();
+    }
+    public void addItem(Item item) {
+        mRepository.addItemToCart(item);
+    }
+    public void removeItem(Item item) {
+        mRepository.removeItemFromCart(item);
+    }
+
+
+    //Functions/Methods related to orders.
+    public LiveData<List<OrderItem>> getOrderItems() {
+        return mRepository.getOrderItems();
+    }
+    public LiveData<OrderItem> getOrderItem(String orderItemId) {
+        return mRepository.getOrderItem(orderItemId);
+    }
+    public void addOrderItem(OrderItem orderItem) {
+        mRepository.addOrderItem(orderItem);
+    }
+    public void removeOrderItem(OrderItem orderItem) {mRepository.removeOrderItem(orderItem);}
+
+
+    //Functions/Methods related to categories.
+    public LiveData<List<CategoryItem>> getCategories() {
+        return mRepository.getCategories();
+    }
+
+
+    //Functions/Methods related to search.
+    public String getCurrentSearchTerm() {
+        return currentSearchTerm;
+    }
+    public void setCurrentSearchTerm(String searchTerm) {
+        this.currentSearchTerm = searchTerm;
+    }
+    public LiveData<List<ItemOfferCart>> getSearchForNameMediator() {
+        return mRepository.getSearchForNameMediator();
+    }
+    public void getSearchItem(String searchItem) {
+        mRepository.getItemsForName(searchItem);
+    }
+    public LiveData<List<String>> getSearchNames(String searchItem) {
+        return mRepository.getItemNamesForName(searchItem);
+    }
+
+
+}
