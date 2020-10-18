@@ -14,13 +14,13 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.example.sampleretainapp.Model.CartItem;
+import com.example.sampleretainapp.Model.CartItemOffer;
 import com.example.sampleretainapp.Model.Item;
-import com.example.sampleretainapp.Model.OfferItem;
+import com.example.sampleretainapp.Model.Offer;
 import com.example.sampleretainapp.R;
 import com.example.sampleretainapp.UI.Adapters.CartAdapter;
 import com.example.sampleretainapp.UI.ItemClickListener;
-import com.example.sampleretainapp.UI.ViewModel.MainActivityViewModel;
+import com.example.sampleretainapp.UI.ViewModel.AppViewModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.Locale;
@@ -28,7 +28,7 @@ import java.util.Locale;
 public class CartActivity extends BaseActivity implements ItemClickListener {
 
 
-    private MainActivityViewModel mainActivityViewModel;
+    private AppViewModel appViewModel;
     private CartAdapter listAdapter;
     private Button buyButton;
     private TextView totalCost;
@@ -40,7 +40,9 @@ public class CartActivity extends BaseActivity implements ItemClickListener {
 
         LayoutInflater inflater = (LayoutInflater) this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View contentView = inflater.inflate(R.layout.activity_cart, null, false);
-        ll.addView(contentView, new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT, ConstraintLayout.LayoutParams.MATCH_PARENT));
+        ll.addView(contentView,
+                new ConstraintLayout.LayoutParams(ConstraintLayout.LayoutParams.MATCH_PARENT,
+                        ConstraintLayout.LayoutParams.MATCH_PARENT));
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle("My Cart");
@@ -49,11 +51,8 @@ public class CartActivity extends BaseActivity implements ItemClickListener {
         RecyclerView listItemView = contentView.findViewById(R.id.list_item_view);
         buyButton = contentView.findViewById(R.id.buy_button);
         buyButton.setOnClickListener(view -> {
-            if (mainActivityViewModel.getCartLiveData().getValue() != null &&
-                    mainActivityViewModel.getCartLiveData().getValue().size() > 0) {
                 Intent intent = new Intent(CartActivity.this, CheckOutActivity.class);
                 startActivity(intent);
-            }
         });
 
         FloatingActionButton fab = contentView.findViewById(R.id.fab);
@@ -63,7 +62,7 @@ public class CartActivity extends BaseActivity implements ItemClickListener {
             alertDialog.setMessage("Are you sure, you want to clear your cart ?");
             alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "YES",
                     (dialog, which) -> {
-                        mainActivityViewModel.clearCart();
+                        appViewModel.clearCart();
                         dialog.dismiss();
                     });
             alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "NO",
@@ -75,21 +74,20 @@ public class CartActivity extends BaseActivity implements ItemClickListener {
         totalCost = contentView.findViewById(R.id.total_cost);
         totalSave = contentView.findViewById(R.id.total_save);
 
-        mainActivityViewModel = new ViewModelProvider(this).get(
-                MainActivityViewModel.class);
+        appViewModel = new ViewModelProvider(this).get(
+                AppViewModel.class);
 
         TextView orderEmptyTextView = contentView.findViewById(R.id.order_empty_text_view);
         orderEmptyTextView.setVisibility(View.GONE);
-        if (mainActivityViewModel.getOrderItems().getValue() == null) {
+        if (appViewModel.getOrderItems().getValue() == null) {
             orderEmptyTextView.setVisibility(View.VISIBLE);
         }
-        mainActivityViewModel.getCartLiveData().observe(this,
+        appViewModel.getCartItems().observe(this,
                 cartItems -> {
                     listAdapter.setList(cartItems);
                     totalCost.setText("");
                     totalSave.setVisibility(View.GONE);
                     if (cartItems.size() == 0) {
-//                        onBackPressed();
                         fab.setVisibility(View.GONE);
                         checkoutSection.setVisibility(View.GONE);
                         orderEmptyTextView.setVisibility(View.VISIBLE);
@@ -100,12 +98,12 @@ public class CartActivity extends BaseActivity implements ItemClickListener {
                     fab.setVisibility(View.VISIBLE);
                     int sum = 0;
                     int sumWithoutDiscount = 0;
-                    for (CartItem cartItem : cartItems) {
-                        float price = cartItem.quantity * cartItem.item.price;
+                    for (CartItemOffer cartItem : cartItems) {
+                        float price = cartItem.cart.quantity * cartItem.item.price;
                         sumWithoutDiscount += price;
-                        OfferItem offerItem = mainActivityViewModel.getOfferItem(cartItem.item);
+                        Offer offerItem = cartItem.offer;
                         if (offerItem != null) {
-                            if (cartItem.quantity >= offerItem.minQuantity) {
+                            if (cartItem.cart.quantity >= offerItem.minQuantity) {
                                 price = (float) (price - (offerItem.percentageDiscount * price));
                             }
                         }
@@ -114,13 +112,13 @@ public class CartActivity extends BaseActivity implements ItemClickListener {
                     totalCost.setText(String.format(Locale.ENGLISH, "Total: Rs %d",
                             sum));
                     int saved = sumWithoutDiscount - sum;
-                    if(saved > 0) {
+                    if (saved > 0) {
                         totalSave.setVisibility(View.VISIBLE);
-                        totalSave.setText(String.format(Locale.ENGLISH, "Saved: Rs %d",saved
-                                ));
+                        totalSave.setText(String.format(Locale.ENGLISH, "Saved: Rs %d", saved
+                        ));
                     }
                 });
-        listAdapter = new CartAdapter(mainActivityViewModel,this);
+        listAdapter = new CartAdapter(appViewModel, this);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         listItemView.setLayoutManager(layoutManager);
         listItemView.setItemAnimator(null);
@@ -130,7 +128,7 @@ public class CartActivity extends BaseActivity implements ItemClickListener {
     @Override
     public void itemClicked(Item item) {
         Intent intent = new Intent(this, ItemActivity.class);
-        intent.putExtra("itemId",item.id);
+        intent.putExtra("itemId", item.id);
         startActivity(intent);
     }
 

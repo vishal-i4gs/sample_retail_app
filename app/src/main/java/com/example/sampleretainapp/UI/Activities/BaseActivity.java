@@ -3,7 +3,6 @@ package com.example.sampleretainapp.UI.Activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.Gravity;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -18,8 +17,8 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.sampleretainapp.R;
-import com.example.sampleretainapp.UI.Fragments.AutoCompleteDialogFragment;
-import com.example.sampleretainapp.UI.ViewModel.MainActivityViewModel;
+import com.example.sampleretainapp.UI.Fragments.SearchDialogFragment;
+import com.example.sampleretainapp.UI.ViewModel.AppViewModel;
 import com.google.android.material.navigation.NavigationView;
 
 public class BaseActivity extends AppCompatActivity {
@@ -31,7 +30,7 @@ public class BaseActivity extends AppCompatActivity {
     private ActionBarDrawerToggle t;
     private NavigationView nv;
 
-    MainActivityViewModel mainActivityViewModel;
+    AppViewModel appViewModel;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -51,8 +50,8 @@ public class BaseActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setHomeButtonEnabled(true);
 
-        mainActivityViewModel = new ViewModelProvider(this).get(
-                MainActivityViewModel.class);
+        appViewModel = new ViewModelProvider(this).get(
+                AppViewModel.class);
 
         nv = (NavigationView) findViewById(R.id.nv);
         nv.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
@@ -107,9 +106,8 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     protected void showDialog() {
-        AutoCompleteDialogFragment newFragment = AutoCompleteDialogFragment.newInstance("");
-        newFragment.cityList = mainActivityViewModel.getSearchTerms();
-        newFragment.viewItemListener = new AutoCompleteDialogFragment.ViewItemListener() {
+        SearchDialogFragment newFragment = SearchDialogFragment.newInstance("");
+        newFragment.viewItemListener = new SearchDialogFragment.ViewItemListener() {
             @Override
             public void onItemClicked(String item) {
                 Intent intent = new Intent(BaseActivity.this,

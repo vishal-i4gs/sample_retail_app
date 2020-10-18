@@ -17,7 +17,7 @@ import com.example.sampleretainapp.Model.OrderItem;
 import com.example.sampleretainapp.R;
 import com.example.sampleretainapp.UI.Adapters.OrderAdapter;
 import com.example.sampleretainapp.UI.ItemClickListener;
-import com.example.sampleretainapp.UI.ViewModel.MainActivityViewModel;
+import com.example.sampleretainapp.UI.ViewModel.AppViewModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
@@ -46,10 +46,10 @@ public class OrderActivity extends BaseActivity {
 
         RecyclerView listItemView = contentView.findViewById(R.id.list_item_view);
 
-        MainActivityViewModel mainActivityViewModel = new ViewModelProvider(this).get(
-                MainActivityViewModel.class);
+        AppViewModel appViewModel = new ViewModelProvider(this).get(
+                AppViewModel.class);
 
-        mainActivityViewModel.getOrderItems().observe(this,
+        appViewModel.getOrderItems().observe(this,
                 orderItems -> {
                     Log.d("Count is ", String.valueOf(orderItems.size()));
                     if (orderItems.size() == 0) {
