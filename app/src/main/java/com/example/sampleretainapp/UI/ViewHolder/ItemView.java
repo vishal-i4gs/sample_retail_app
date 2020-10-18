@@ -4,17 +4,16 @@ import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.StrikethroughSpan;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.sampleretainapp.Model.CartItem;
+import com.example.sampleretainapp.Model.CartItemOffer;
 import com.example.sampleretainapp.Model.Item;
-import com.example.sampleretainapp.Model.OfferItem;
+import com.example.sampleretainapp.Model.Offer;
 import com.example.sampleretainapp.R;
 import com.example.sampleretainapp.UI.ItemClickListener;
 
@@ -22,19 +21,14 @@ import java.util.Locale;
 
 public class ItemView extends RecyclerView.ViewHolder {
 
-    //    private TextView brandName;
     private TextView itemName;
     private TextView imageName;
     private TextView quantities;
-    private Button addItem;
-    private Button removeItem;
     private Button addButton;
     private View controlButton;
     private TextView currentNumber;
     private TextView price;
     private TextView offerText;
-
-    private Item item;
 
     public ItemView(@NonNull View itemView, ItemClickListener itemClickListener) {
         super(itemView);
@@ -43,10 +37,10 @@ public class ItemView extends RecyclerView.ViewHolder {
         quantities = itemView.findViewById(R.id.item_quantities);
         controlButton = itemView.findViewById(R.id.control_buttons);
         addButton = itemView.findViewById(R.id.add_button);
-        addItem = itemView.findViewById(R.id.item_add);
+        Button addItem = itemView.findViewById(R.id.item_add);
         addItem.setOnClickListener(view -> itemClickListener.addItem(getAdapterPosition()));
         addButton.setOnClickListener(view -> itemClickListener.addItem(getAdapterPosition()));
-        removeItem = itemView.findViewById(R.id.item_remove);
+        Button removeItem = itemView.findViewById(R.id.item_remove);
         removeItem.setOnClickListener(view -> itemClickListener.removeItem(getAdapterPosition()));
         currentNumber = itemView.findViewById(R.id.item_current_number);
         price = itemView.findViewById(R.id.item_price);
@@ -54,10 +48,9 @@ public class ItemView extends RecyclerView.ViewHolder {
         itemView.setOnClickListener(view -> itemClickListener.itemClicked(getAdapterPosition()));
     }
 
-    public void setData(Item listItem, CartItem item, OfferItem offerItem) {
+    public void setData(Item listItem, CartItem item, Offer offerItem) {
         addButton.setVisibility(View.VISIBLE);
         controlButton.setVisibility(View.GONE);
-        this.item = listItem;
         itemName.setText(listItem.name);
         imageName.setText(String.format(Locale.ENGLISH, "%s %.1f %s", listItem.name, listItem.value, listItem.unit));
         quantities.setText(String.format(Locale.ENGLISH, "%.1f %s", listItem.value, listItem.unit));
@@ -93,44 +86,41 @@ public class ItemView extends RecyclerView.ViewHolder {
         }
     }
 
-    public void setData(CartItem item, OfferItem offerItem) {
+    public void setData(CartItemOffer listItem) {
         addButton.setVisibility(View.GONE);
         controlButton.setVisibility(View.VISIBLE);
-        this.item = item.item;
-        itemName.setText(item.item.name);
-        imageName.setText(String.format(Locale.ENGLISH, "%s %.1f %s", item.item.name, item.item.value, item.item.unit));
-        quantities.setText(String.format(Locale.ENGLISH, "%.1f %s", item.item.value, item.item.unit));
+        itemName.setText(listItem.item.name);
+        imageName.setText(String.format(Locale.ENGLISH, "%s %.1f %s", listItem.item.name, listItem.item.value, listItem.item.unit));
+        quantities.setText(String.format(Locale.ENGLISH, "%.1f %s", listItem.item.value, listItem.item.unit));
         currentNumber.setText("0");
         currentNumber.setText(String.format(Locale.ENGLISH, "%d",
-                item.quantity));
-        int totalPrice = item.quantity * item.item.price;
+                listItem.cart.quantity));
+        int totalPrice = listItem.cart.quantity * listItem.item.price;
         String priceString = String.format(Locale.ENGLISH, "Rs %d",
                 totalPrice);
         price.setText(priceString);
         offerText.setText("");
 
-        if (offerItem == null) {
+        if (listItem.offer == null) {
             return;
         }
         offerText.setText(String.format(Locale.ENGLISH, "Buy %d and get %d%% off",
-                offerItem.minQuantity,
-                (int) (offerItem.percentageDiscount * 100)));
-        if (item.quantity >= offerItem.minQuantity) {
+                listItem.offer.minQuantity,
+                (int) (listItem.offer.percentageDiscount * 100)));
+        if (listItem.cart.quantity >= listItem.offer.minQuantity) {
             int discountedPrice;
-            discountedPrice = (int) (totalPrice - (totalPrice * offerItem.percentageDiscount));
+            discountedPrice = (int) (totalPrice - (totalPrice * listItem.offer.percentageDiscount));
             priceString = String.format(Locale.ENGLISH, "Rs %d\nRs %d",
                     totalPrice, discountedPrice);
         }
         Spannable spannable = new SpannableString(priceString);
-        if (item.quantity >= offerItem.minQuantity) {
+        if (listItem.cart.quantity >= listItem.offer.minQuantity) {
             spannable.setSpan(
                     new StrikethroughSpan(),
                     0, priceString.lastIndexOf("\n"),
                     Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
         price.setText(spannable);
-
-
     }
 
 }

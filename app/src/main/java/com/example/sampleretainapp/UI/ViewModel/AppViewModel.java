@@ -1,7 +1,6 @@
 package com.example.sampleretainapp.UI.ViewModel;
 
 import android.app.Application;
-import android.content.Context;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -16,17 +15,16 @@ import com.example.sampleretainapp.Model.OfferItemCart;
 import com.example.sampleretainapp.Model.OrderItem;
 import com.example.sampleretainapp.Repository;
 
-import java.util.HashMap;
 import java.util.List;
 
-public class MainActivityViewModel extends AndroidViewModel {
+public class AppViewModel extends AndroidViewModel {
 
-    private static final String TAG = MainActivityViewModel.class.getSimpleName();
+    private static final String TAG = AppViewModel.class.getSimpleName();
 
     private Repository mRepository;
     private String currentSearchTerm;
 
-    public MainActivityViewModel(@NonNull Application application) {
+    public AppViewModel(@NonNull Application application) {
         super(application);
         mRepository = ((App) application).getRepository();
     }

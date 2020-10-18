@@ -7,38 +7,38 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 
-import com.example.sampleretainapp.Model.CartItem;
-import com.example.sampleretainapp.Model.OfferItem;
+import com.example.sampleretainapp.Model.CartItemOffer;
+import com.example.sampleretainapp.Model.Offer;
 import com.example.sampleretainapp.Model.OrderItem;
 import com.example.sampleretainapp.R;
-import com.example.sampleretainapp.UI.ViewModel.MainActivityViewModel;
+import com.example.sampleretainapp.UI.ViewModel.AppViewModel;
 
 import java.util.Date;
 import java.util.UUID;
 
 public class CheckOutActivity extends AppCompatActivity {
 
-    private MainActivityViewModel mainActivityViewModel;
+    private AppViewModel appViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_check_out);
 
-        mainActivityViewModel = new ViewModelProvider(this).get(
-                MainActivityViewModel.class);
-        mainActivityViewModel.getCartLiveData().observe(this,
+        appViewModel = new ViewModelProvider(this).get(
+                AppViewModel.class);
+        appViewModel.getCartItems().observe(this,
                 cartItems -> {
                     if (cartItems.size() == 0) {
                         onBackPressed();
                         return;
                     }
                     int sum = 0;
-                    for (CartItem cartItem : cartItems) {
-                        float price = cartItem.quantity * cartItem.item.price;
-                        OfferItem offerItem = mainActivityViewModel.getOfferItem(cartItem.item);
+                    for (CartItemOffer cartItem : cartItems) {
+                        float price = cartItem.cart.quantity * cartItem.item.price;
+                        Offer offerItem =  cartItem.offer;
                         if (offerItem != null) {
-                            if (cartItem.quantity >= offerItem.minQuantity) {
+                            if (cartItem.cart.quantity >= offerItem.minQuantity) {
                                 price = (float) (price - (offerItem.percentageDiscount * price));
                             }
                         }
@@ -51,8 +51,8 @@ public class CheckOutActivity extends AppCompatActivity {
                     orderItem.active = true;
                     orderItem.orderTime = new Date();
                     orderItem.orderItems = cartItems;
-                    mainActivityViewModel.addOrderItem(orderItem);
-                    mainActivityViewModel.clearCart();
+                    appViewModel.addOrderItem(orderItem);
+                    appViewModel.clearCart();
                     new Handler().postDelayed(() -> {
                         Intent intent = new Intent(CheckOutActivity.this, MainActivity.class);
                         startActivity(intent);

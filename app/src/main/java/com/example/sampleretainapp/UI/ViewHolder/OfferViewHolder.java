@@ -8,7 +8,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.sampleretainapp.Model.OfferItem;
+import com.example.sampleretainapp.Model.Offer;
 import com.example.sampleretainapp.R;
 import com.example.sampleretainapp.UI.ItemClickListener;
 
@@ -29,7 +29,7 @@ public class OfferViewHolder extends RecyclerView.ViewHolder {
         });
     }
 
-    public void setData(OfferItem categoryItem) {
+    public void setData(Offer categoryItem) {
         offerImage.getBackground().setColorFilter(categoryItem.color, PorterDuff.Mode.SRC_OVER);
         offerName.setText(categoryItem.offerName);
     }

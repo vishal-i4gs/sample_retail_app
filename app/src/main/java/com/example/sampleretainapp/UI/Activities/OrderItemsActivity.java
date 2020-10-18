@@ -13,12 +13,12 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.example.sampleretainapp.Model.CartItem;
-import com.example.sampleretainapp.Model.OfferItem;
+import com.example.sampleretainapp.Model.CartItemOffer;
+import com.example.sampleretainapp.Model.Offer;
 import com.example.sampleretainapp.Model.OrderItem;
 import com.example.sampleretainapp.R;
 import com.example.sampleretainapp.UI.Adapters.OrderCartAdapter;
-import com.example.sampleretainapp.UI.ViewModel.MainActivityViewModel;
+import com.example.sampleretainapp.UI.ViewModel.AppViewModel;
 
 import java.util.Locale;
 
@@ -29,7 +29,7 @@ public class OrderItemsActivity extends AppCompatActivity {
     TextView totalSave;
     RecyclerView listItemView;
     Button removeButton;
-    MainActivityViewModel mainActivityViewModel;
+    AppViewModel appViewModel;
     View orderControlSection;
 
     @Override
@@ -41,9 +41,9 @@ public class OrderItemsActivity extends AppCompatActivity {
         orderControlSection = findViewById(R.id.order_control_section);
         totalCost = findViewById(R.id.total_cost);
         totalSave = findViewById(R.id.total_save);
-        mainActivityViewModel = new ViewModelProvider(this).get(
-                MainActivityViewModel.class);
-        mainActivityViewModel.getOrderItem(getIntent().getStringExtra("orderItemId"))
+        appViewModel = new ViewModelProvider(this).get(
+                AppViewModel.class);
+        appViewModel.getOrderItem(getIntent().getStringExtra("orderItemId"))
                 .observe(this, new Observer<OrderItem>() {
                     @Override
                     public void onChanged(OrderItem orderItem) {
@@ -57,12 +57,12 @@ public class OrderItemsActivity extends AppCompatActivity {
         totalSave.setVisibility(View.GONE);
         int sum = 0;
         int sumWithoutDiscount = 0;
-        for (CartItem cartItem : orderItem.orderItems) {
-            float price = cartItem.quantity * cartItem.item.price;
+        for (CartItemOffer cartItem : orderItem.orderItems) {
+            float price = cartItem.cart.quantity * cartItem.item.price;
             sumWithoutDiscount += price;
-            OfferItem offerItem = cartItem.offerItem;
+            Offer offerItem = cartItem.offer;
             if (offerItem != null) {
-                if (cartItem.quantity >= offerItem.minQuantity) {
+                if (cartItem.cart.quantity >= offerItem.minQuantity) {
                     price = (float) (price - (offerItem.percentageDiscount * price));
                 }
             }
@@ -80,7 +80,7 @@ public class OrderItemsActivity extends AppCompatActivity {
         if (getSupportActionBar() != null) {
             getSupportActionBar().setTitle("Order #" + orderItem.orderId.substring(0, 10));
         }
-        listAdapter = new OrderCartAdapter(mainActivityViewModel);
+        listAdapter = new OrderCartAdapter(appViewModel);
         listAdapter.setList(orderItem.orderItems);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         listItemView.setLayoutManager(layoutManager);
@@ -92,7 +92,7 @@ public class OrderItemsActivity extends AppCompatActivity {
             alertDialog.setMessage("Are you sure, you want to cancel this order ?");
             alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "YES",
                     (dialog, which) -> {
-                        mainActivityViewModel.removeOrderItem(orderItem);
+                        appViewModel.removeOrderItem(orderItem);
                         dialog.dismiss();
                     });
             alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "NO",

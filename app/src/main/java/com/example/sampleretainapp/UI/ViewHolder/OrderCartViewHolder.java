@@ -11,9 +11,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.sampleretainapp.Model.CartItem;
 import com.example.sampleretainapp.Model.Item;
-import com.example.sampleretainapp.Model.OfferItem;
+import com.example.sampleretainapp.Model.Offer;
 import com.example.sampleretainapp.R;
-import com.example.sampleretainapp.UI.ItemClickListener;
 
 import java.util.Locale;
 
@@ -32,14 +31,14 @@ public class OrderCartViewHolder extends RecyclerView.ViewHolder {
         price = itemView.findViewById(R.id.item_price);
     }
 
-    public void setData(CartItem cartItem, OfferItem offerItem) {
-        itemName.setText(cartItem.item.name);
+    public void setData(Item item, CartItem cartItem, Offer offerItem) {
+        itemName.setText(item.name);
         quantities.setText(String.format(Locale.ENGLISH, "%.1f %s",
-                cartItem.item.value, cartItem.item.unit));
+                item.value, item.unit));
         currentNumber.setText("0");
         currentNumber.setText(String.format(Locale.ENGLISH, "Quantity : %d", cartItem.quantity));
 
-        int totalPrice = cartItem.quantity * cartItem.item.price;
+        int totalPrice = cartItem.quantity * item.price;
         String priceString = String.format(Locale.ENGLISH, "Rs %d",
                 totalPrice);
         price.setText(priceString);
