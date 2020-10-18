@@ -3,15 +3,19 @@ package com.example.sampleretainapp;
 import android.content.Context;
 import android.graphics.Color;
 
-import androidx.annotation.ColorInt;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.Transformations;
 
 import com.example.sampleretainapp.Model.CartItem;
+import com.example.sampleretainapp.Model.CartItemOffer;
 import com.example.sampleretainapp.Model.CategoryItem;
 import com.example.sampleretainapp.Model.Item;
-import com.example.sampleretainapp.Model.OfferItem;
+import com.example.sampleretainapp.Model.ItemOfferCart;
+import com.example.sampleretainapp.Model.Offer;
+import com.example.sampleretainapp.Model.OfferItemCart;
 import com.example.sampleretainapp.Model.OrderItem;
 import com.example.sampleretainapp.db.AppDatabase;
 import com.squareup.moshi.JsonAdapter;
@@ -21,70 +25,35 @@ import com.squareup.moshi.Types;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Random;
 
 public class Repository {
 
     private static final String TAG = Repository.class.getSimpleName();
-    private Context context;
     private static Repository shared;
-
-    private MutableLiveData<List<Item>> listMutableLiveData =
-            new MutableLiveData<>();
 
     private MutableLiveData<List<CategoryItem>> categories =
             new MutableLiveData<>();
 
-    private MutableLiveData<List<CartItem>> cartItemsLiveData =
+    private LiveData<List<ItemOfferCart>> searchForName =
             new MutableLiveData<>();
 
-    private MutableLiveData<List<OfferItem>> offerItemsLiveData =
-            new MutableLiveData<>();
+    private MediatorLiveData<List<ItemOfferCart>> searchForNameMediator =
+            new MediatorLiveData<>();
 
-    private MutableLiveData<List<OrderItem>> orderItemsLiveData =
-            new MutableLiveData<>();
-
-    private MutableLiveData<Integer> listItemUpdate =
-            new MutableLiveData<>();
-
-    public HashMap<String, Item> listItemHashmap = new HashMap<>();
-
-    public List<String> searchTerms = new ArrayList<>();
-
-    private MediatorLiveData<List<OrderItem>> mObservableOrders;
-    private final AppDatabase mDatabase;
+    private AppDatabase mDatabase;
     private final AppExecutors appExecutors;
 
     private Repository(Context context, final AppDatabase database, final AppExecutors appExecutors) {
-        this.context = context.getApplicationContext();
         this.mDatabase = database;
         this.appExecutors = appExecutors;
-        String json = loadJSONFromAsset();
-        Moshi moshi = new Moshi.Builder().build();
-        Type type = Types.newParameterizedType(List.class, Item.class);
-        JsonAdapter<List<Item>> adapter = moshi.adapter(type);
-        List<Item> listItems = new ArrayList<>();
 
-        try {
-            if (json != null) {
-                listItems = adapter.fromJson(json);
-                if (listItems != null) {
-                    for (Item item : listItems) {
-                        listItemHashmap.put(item.name + " " + item.value + item.unit, item);
-                        if (!searchTerms.contains(item.name)) {
-                            searchTerms.add(item.name);
-                        }
-                    }
-                }
-                listMutableLiveData.postValue(listItems);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+        //Random Color Selector and Assigning it to category items.
         Random rng = new Random();
         List<Integer> generatedColors = new ArrayList<Integer>() {
             {
@@ -101,7 +70,6 @@ public class Repository {
                 add(Color.parseColor("#31BEA0"));
             }
         };
-
         List<CategoryItem> categoryItems = new ArrayList();
         for (int i = 0; i < 4; i++) {
             CategoryItem categoryItem = new CategoryItem();
@@ -112,46 +80,70 @@ public class Repository {
         categories.postValue(categoryItems);
 
 
-        List<OfferItem> offerItems = new ArrayList<>();
-        List<Integer> generated = new ArrayList<Integer>();
-        int totalNumberOfOffers = (int) (listItems.size() * 0.30);
-        for (int i = 0; i < totalNumberOfOffers; i++) {
-            while (true) {
-                Integer next = rng.nextInt(totalNumberOfOffers) + 1;
-                if (!generated.contains(next)) {
-                    generated.add(next);
-                    break;
-                }
-            }
-        }
-        int counter;
-        for (counter = 0; counter < generated.size(); counter++) {
-            int randomNumber = generated.get(counter);
-            OfferItem offerItem = new OfferItem();
-            offerItem.offerName = "Offer " + (counter + 1);
-            offerItem.item = listItems.get(randomNumber);
-            offerItem.minQuantity = 2 + new Random().nextInt(3);
-            offerItem.percentageDiscount = randFloat(0.1f, 0.3f);
-            offerItem.color = generatedColors.get(counter % generatedColors.size());
-            offerItems.add(offerItem);
-        }
-        offerItemsLiveData.postValue(offerItems);
-
-        mObservableOrders = new MediatorLiveData<>();
-        mObservableOrders.addSource(mDatabase.orderDao().loadAllOrders(),
-                productEntities -> {
-                    mObservableOrders.postValue(productEntities);
+        //Parsing the json file and adding the items to items table.
+        String json = loadJSONFromAsset(context);
+        Moshi moshi = new Moshi.Builder().build();
+        Type type = Types.newParameterizedType(List.class, Item.class);
+        JsonAdapter<List<Item>> adapter = moshi.adapter(type);
+        List<Item> listItems = new ArrayList<>();
+        try {
+            if (json != null) {
+                listItems = adapter.fromJson(json);
+                List<Item> finalListItems = listItems;
+                appExecutors.diskIO().execute(() -> {
+                    database.runInTransaction(() -> {
+                        database.itemDao().removeAllItems();
+                        for (Item item : finalListItems) {
+                            DecimalFormat format = new DecimalFormat("0.#");
+                            item.name = String.format(Locale.ENGLISH, "%s %s %s",
+                                    item.name, format.format(item.value), item.unit);
+                        }
+                        database.itemDao().insert(finalListItems);
+                    });
                 });
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-    }
 
-    public static float randFloat(float min, float max) {
-        Random rand = new Random();
-        return rand.nextFloat() * (max - min) + min;
-    }
+        //Observing changes to items table and randomly applying offers to certain items.
+        database.itemDao().getItems().observeForever(new Observer<List<Item>>() {
+            @Override
+            public void onChanged(List<Item> itemAndOffers) {
+                List<Offer> offerItems = new ArrayList<>();
+                List<Integer> generated = new ArrayList<Integer>();
+                int totalNumberOfOffers = (int) (itemAndOffers.size() * 0.30);
+                for (int i = 0; i < totalNumberOfOffers; i++) {
+                    while (true) {
+                        Integer next = rng.nextInt(itemAndOffers.size());
+                        if (!generated.contains(next)) {
+                            generated.add(next);
+                            break;
+                        }
+                    }
+                }
+                int counter;
+                for (counter = 0; counter < generated.size(); counter++) {
+                    int randomNumber = generated.get(counter);
+                    Offer offerItem = new Offer();
+                    offerItem.offerName = "Offer " + (counter + 1);
+                    offerItem.itemId = itemAndOffers.get(randomNumber).id;
+                    offerItem.minQuantity = 2 + new Random().nextInt(3);
+                    offerItem.percentageDiscount = randFloat(0.1f, 0.3f);
+                    offerItem.color = generatedColors.get(counter % generatedColors.size());
+                    offerItems.add(offerItem);
+                }
 
-    public List<String> getSearchTerms() {
-        return searchTerms;
+                appExecutors.diskIO().execute(() -> {
+                    mDatabase.cartDao().removeAllItems();
+                    mDatabase.offerDao().removeAllOffers();
+                    mDatabase.offerDao().insert(offerItems);
+                });
+                mDatabase.itemDao().getItems().removeObserver(this);
+            }
+        });
+
     }
 
     static Repository getInstance(final Context context, final AppDatabase mDatabase, final AppExecutors appExecutors) {
@@ -165,85 +157,54 @@ public class Repository {
         return shared;
     }
 
-    public void addItemToCart(Item item, OfferItem offerItem) {
-        if (cartItemsLiveData.getValue() == null) {
-            List<CartItem> cartItemsNew = new ArrayList<>();
-            cartItemsLiveData.setValue(cartItemsNew);
-        }
-        CartItem cartItemC = new CartItem();
-        cartItemC.item = item;
-        if (cartItemsLiveData.getValue().contains(cartItemC)) {
-            int index = cartItemsLiveData.getValue().indexOf(cartItemC);
-            CartItem cartItem = cartItemsLiveData.getValue().get(index);
-            cartItem.quantity += 1;
-            cartItem.offerItem = offerItem;
-            cartItemsLiveData.postValue(cartItemsLiveData.getValue());
-        } else {
-            CartItem cartItem = new CartItem();
-            cartItem.item = item;
-            cartItem.quantity = 1;
-            cartItem.offerItem = offerItem;
-            List<CartItem> cartItemsNew = cartItemsLiveData.getValue();
-            cartItemsNew.add(cartItem);
-            cartItemsLiveData.postValue(cartItemsNew);
-        }
+    //Cart Related Opertions/Methods
+    public void addItemToCart(Item item) {
+        appExecutors.diskIO().execute(() -> {
+            mDatabase.runInTransaction(() -> {
+                int currentNumber = 1;
+                CartItem cartItem = mDatabase.cartDao().getCartItemForIdSync(item.id);
+                if (cartItem != null) {
+                    int number = cartItem.quantity;
+                    number = number + currentNumber;
+                    cartItem.quantity = number;
+                    mDatabase.cartDao().update(cartItem);
+                } else {
+                    CartItem cartItemFinal = new CartItem();
+                    cartItemFinal.itemId = item.id;
+                    cartItemFinal.quantity = currentNumber;
+                    mDatabase.cartDao().insert(cartItemFinal);
+                }
+
+            });
+        });
     }
 
     public void removeItemFromCart(Item item) {
-        if (cartItemsLiveData.getValue() != null) {
-            CartItem cartItemC = new CartItem();
-            cartItemC.item = item;
-            if (cartItemsLiveData.getValue().contains(cartItemC)) {
-                int index = cartItemsLiveData.getValue().indexOf(cartItemC);
-                CartItem cartItem = cartItemsLiveData.getValue().get(index);
-                cartItem.quantity -= 1;
-                if (cartItem.quantity == 0) {
-                    List<CartItem> cartItemsNew = cartItemsLiveData.getValue();
-                    cartItemsNew.remove(index);
-                    cartItemsLiveData.postValue(cartItemsNew);
-                } else {
-                    cartItemsLiveData.postValue(cartItemsLiveData.getValue());
+        appExecutors.diskIO().execute(() -> {
+            mDatabase.runInTransaction(() -> {
+                CartItem cartItem = mDatabase.cartDao().getCartItemForIdSync(item.id);
+                if (cartItem == null) {
+                    return;
                 }
-            }
-        }
+                int number = cartItem.quantity;
+                number = number - 1;
+                if (number == 0) {
+                    mDatabase.cartDao().remove(cartItem);
+                    return;
+                }
+                cartItem.quantity = number;
+                mDatabase.cartDao().update(cartItem);
+            });
+        });
     }
 
-    public CartItem getCartItem(Item item) {
-        if (cartItemsLiveData.getValue() != null) {
-            CartItem cartItemC = new CartItem();
-            cartItemC.item = item;
-            if (cartItemsLiveData.getValue().contains(cartItemC)) {
-                int index = cartItemsLiveData.getValue().indexOf(cartItemC);
-                return cartItemsLiveData.getValue().get(index);
-            }
-        }
-        return null;
+    public void clearCart() {
+        appExecutors.diskIO().execute(() -> {
+            mDatabase.cartDao().removeAllItems();
+        });
     }
 
-    public OfferItem getOfferItem(Item item) {
-        if (offerItemsLiveData.getValue() != null) {
-            OfferItem offerItem = new OfferItem();
-            offerItem.item = item;
-            if (offerItemsLiveData.getValue().contains(offerItem)) {
-                int index = offerItemsLiveData.getValue().indexOf(offerItem);
-                return offerItemsLiveData.getValue().get(index);
-            }
-        }
-        return null;
-    }
-
-    public Item getItem(String itemId) {
-        if (listMutableLiveData.getValue() != null) {
-            Item item = new Item();
-            item.id = itemId;
-            if (listMutableLiveData.getValue().contains(item)) {
-                int index = listMutableLiveData.getValue().indexOf(item);
-                return listMutableLiveData.getValue().get(index);
-            }
-        }
-        return null;
-    }
-
+    //Order Related Opertions/Methods
     public LiveData<OrderItem> getOrderItem(String orderItemId) {
         return mDatabase.orderDao().loadOrder(orderItemId);
     }
@@ -261,63 +222,60 @@ public class Repository {
     }
 
     //Getters
-    public LiveData<List<Item>> getList() {
-        return listMutableLiveData;
+    public LiveData<List<ItemOfferCart>> getItems() {
+        return mDatabase.itemDao().getItemsAndOffers();
+    }
+
+    public LiveData<ItemOfferCart> getItemForId(String id) {
+        return mDatabase.itemDao().getItemForId(id);
+    }
+
+    public LiveData<List<OfferItemCart>> getOfferItems() {
+        return mDatabase.offerDao().getOffersAndItems();
+    }
+
+    public LiveData<List<CartItemOffer>> getCartItems() {
+        return mDatabase.cartDao().getCartItems();
+    }
+
+    public LiveData<List<OrderItem>> getOrderItems() {
+        return mDatabase.orderDao().loadAllOrders();
     }
 
     public LiveData<List<CategoryItem>> getCategories() {
         return categories;
     }
 
-    public LiveData<List<CartItem>> getCartList() {
-        return cartItemsLiveData;
+    public MediatorLiveData<List<ItemOfferCart>> getSearchForNameMediator() {
+        return searchForNameMediator;
     }
 
-    public void clearCart() {
-        cartItemsLiveData.postValue(new ArrayList<>());
-    }
-
-    public LiveData<Integer> getListItemUpdate() {
-        return listItemUpdate;
-    }
-
-    public MutableLiveData<List<OfferItem>> getOfferItemsLiveData() {
-        return offerItemsLiveData;
-    }
-
-    public LiveData<List<OrderItem>> getOrderItemsLiveData() {
-        return mDatabase.orderDao().loadAllOrders();
-//        return mObservableOrders;
-    }
-
-
-    public void processMessage(String itemName, String subItemName) {
-        Item item = listItemHashmap.get(itemName);
-//        if (item != null) {
-//            for (SubItem subItem : item.subItems) {
-//                if (subItem.name.equalsIgnoreCase(subItemName)) {
-//                    addItemToCart(item.subItems.indexOf(subItem), item);
-//                }
-//            }
-//        }
-    }
-
-    public List<Item> getItemsForName(String name) {
-        name = name.toLowerCase();
-        String text;
-        ArrayList<String> strings
-                = new ArrayList<>(listItemHashmap.keySet());
-        ArrayList<Item> filteredDataList = new ArrayList<>();
-        for (String dataFromDataList : strings) {
-            if (dataFromDataList.toLowerCase().contains(name.toLowerCase())) {
-                filteredDataList.add(listItemHashmap.get(dataFromDataList));
-            }
+    public void getItemsForName(String name) {
+        if (searchForName != null) {
+            searchForNameMediator.removeSource(searchForName);
         }
-        return filteredDataList;
+        searchForName = mDatabase.itemDao().getItemsAndOffersBasedOnSearch(name);
+        searchForNameMediator.addSource(searchForName, itemOfferCarts
+                -> searchForNameMediator.postValue(itemOfferCarts));
+    }
+
+    public LiveData<List<String>> getItemNamesForName(String name) {
+        return Transformations.map(mDatabase.itemDao().getItemsAndOffersBasedOnSearch(name), input -> {
+            List<String> strings = new ArrayList<>();
+            for (ItemOfferCart itemOfferCart : input) {
+                strings.add(itemOfferCart.item.name);
+            }
+            return strings;
+        });
     }
 
     //Helpers
-    private String loadJSONFromAsset() {
+    public static float randFloat(float min, float max) {
+        Random rand = new Random();
+        return rand.nextFloat() * (max - min) + min;
+    }
+
+    private static String loadJSONFromAsset(Context context) {
         String json;
         try {
             InputStream is = context.getAssets().open("list.json");
