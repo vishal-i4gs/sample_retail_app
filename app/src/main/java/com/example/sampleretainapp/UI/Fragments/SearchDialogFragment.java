@@ -9,7 +9,6 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
@@ -19,79 +18,37 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatTextView;
 import androidx.fragment.app.DialogFragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-
 import com.example.sampleretainapp.R;
+import com.example.sampleretainapp.UI.ViewModel.AppViewModel;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-public class AutoCompleteDialogFragment extends DialogFragment implements OnClickListener {
+public class SearchDialogFragment extends DialogFragment {
 
-    public static AutoCompleteDialogFragment newInstance(String searchText) {
-        AutoCompleteDialogFragment myFragment = new AutoCompleteDialogFragment();
+    private static final String TAG = "AutoCompleteDialogFragment";
+    public ViewItemListener viewItemListener;
+    private EditText filterText;
+    private NameAdapter nameAdapter;
+    private ImageView searchClearButton;
+    private AppViewModel appViewModel;
+    private String searchString;
+
+    public static SearchDialogFragment newInstance(String searchText) {
+        SearchDialogFragment myFragment = new SearchDialogFragment();
 
         Bundle args = new Bundle();
         args.putString("searchString", searchText);
         myFragment.setArguments(args);
 
         return myFragment;
-    }
-
-    public interface ViewItemListener {
-        public void onItemClicked(String item);
-    }
-
-    private static final String TAG = "AutoCompleteDialogFragment";
-    public ViewItemListener viewItemListener;
-    public List<String> cityList;
-    //  private ListView list;
-    private EditText filterText;
-    private NameAdapter nameAdapter;
-    private RecyclerView recyclerView;
-    private ImageView searchClearButton;
-    private String currentSearchTerm = "";
-//
-    private TextWatcher filterTextWatcher = new TextWatcher() {
-
-        public void afterTextChanged(Editable s) {
-        }
-
-        public void beforeTextChanged(CharSequence s, int start, int count,
-                                      int after) {
-        }
-
-        public void onTextChanged(CharSequence s, int start, int before,
-                                  int count) {
-            nameAdapter.getFilter(s);
-            currentSearchTerm = s.toString();
-            if (currentSearchTerm.length() > 1) {
-                searchClearButton.setVisibility(View.VISIBLE);
-            } else {
-                searchClearButton.setVisibility(View.GONE);
-            }
-        }
-    };
-
-    private void filter(String charText) {
-        ArrayList<String> searchList = new ArrayList<>();
-        //charText = charText.toUpperCase(Locale.getDefault());
-        for (String model : cityList) {
-            if (model.contains(charText)) {
-                searchList.add(model);
-            }
-        }
-        nameAdapter.setCities(searchList);
-    }
-
-
-    public List<String> getCityList() {
-        return cityList;
     }
 
     @Override
@@ -109,12 +66,13 @@ public class AutoCompleteDialogFragment extends DialogFragment implements OnClic
         View view = inflater.inflate(R.layout.autocomplete_dialog_fragment, container,
                 false);
         filterText = view.findViewById(R.id.search_text);
-        String searchString = getArguments().getString("searchString", "");
-        if(filterText.requestFocus()) {
+        if (getArguments() != null) {
+            searchString = getArguments().getString("searchString", "");
+        }
+        if (filterText.requestFocus()) {
             getDialog().getWindow().setSoftInputMode(
                     WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
         }
-        filterText.addTextChangedListener(filterTextWatcher);
         searchClearButton = view.findViewById(R.id.clear_text);
         searchClearButton.setOnClickListener(view1 -> {
             filterText.getText().clear();
@@ -131,38 +89,17 @@ public class AutoCompleteDialogFragment extends DialogFragment implements OnClic
             }
             return false;
         });
-        recyclerView = view.findViewById(R.id.list_item_view);
+        RecyclerView recyclerView = view.findViewById(R.id.list_item_view);
         if (savedInstanceState != null) {
             dismiss();
         }
-        Collections.sort(cityList);
-        nameAdapter = new NameAdapter(getContext(), cityList,
+        nameAdapter = new NameAdapter(getContext(),
                 R.layout.autocomplete_list_item);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(nameAdapter);
         ImageButton cancelButton = view.findViewById(R.id.back_arrow);
         cancelButton.setOnClickListener(v -> dismiss());
-
-        filterText.setText(searchString);
-        filterText.setSelection(filterText.getText().length());
-
         return view;
-    }
-
-    @Override
-    public void onSaveInstanceState(final Bundle outState) {
-        super.onSaveInstanceState(outState);
-    }
-
-    @Override
-    public void onClick(View v) {
-
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        filterText.removeTextChangedListener(filterTextWatcher);
     }
 
     @Override
@@ -176,6 +113,44 @@ public class AutoCompleteDialogFragment extends DialogFragment implements OnClic
         }
     }
 
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        appViewModel = new ViewModelProvider(this).get(
+                AppViewModel.class);
+        appViewModel.getSearchNames("").observe(
+                getViewLifecycleOwner(), strings -> nameAdapter.setCities(strings));
+        filterText.addTextChangedListener(filterTextWatcher);
+        filterText.setText(searchString);
+        filterText.setSelection(filterText.getText().length());
+    }
+
+    private TextWatcher filterTextWatcher = new TextWatcher() {
+
+        public void afterTextChanged(Editable s) {
+        }
+
+        public void beforeTextChanged(CharSequence s, int start, int count,
+                                      int after) {
+        }
+
+        public void onTextChanged(CharSequence s, int start, int before,
+                                  int count) {
+            String currentSearchTerm = s.toString();
+            if (currentSearchTerm.length() > 0) {
+                appViewModel.getSearchNames(currentSearchTerm).observe(
+                        getViewLifecycleOwner(), strings -> nameAdapter.setCities(strings));
+                searchClearButton.setVisibility(View.VISIBLE);
+            } else {
+                searchClearButton.setVisibility(View.GONE);
+            }
+        }
+    };
+
+    public interface ViewItemListener {
+        public void onItemClicked(String item);
+    }
+
     public class NameHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         AppCompatTextView countryName;
 
@@ -185,36 +160,31 @@ public class AutoCompleteDialogFragment extends DialogFragment implements OnClic
             itemView.setOnClickListener(this);
         }
 
-        public void setCountryName(String countryName) {
-            this.countryName.setText(countryName);
+        public void setName(String name) {
+            this.countryName.setText(name);
         }
 
         @Override
         public void onClick(View view) {
             viewItemListener.onItemClicked(countryName.getText().toString());
-            AutoCompleteDialogFragment.this.dismiss();
+            SearchDialogFragment.this.dismiss();
         }
     }
 
     public class NameAdapter extends RecyclerView.Adapter<NameHolder> {
 
-        void setCities(ArrayList<String> cities) {
-            this.cities.clear();
-            this.cities.addAll(cities);
+        void setCities(List<String> cities) {
+            this.names.clear();
+            this.names.addAll(cities);
             notifyDataSetChanged();
         }
 
-        private ArrayList<String> cities = new ArrayList<>();
-        private ArrayList<String> allCities = new ArrayList<>();
+        private ArrayList<String> names = new ArrayList<>();
 
         private Context context;
         private int itemResource;
 
-        NameAdapter(Context context, List<String> cities, int itemResource) {
-            this.allCities.clear();
-            this.cities.clear();
-            this.allCities.addAll(cities);
-            this.cities.addAll(cities);
+        NameAdapter(Context context, int itemResource) {
             this.context = context;
             this.itemResource = itemResource;
         }
@@ -230,36 +200,13 @@ public class AutoCompleteDialogFragment extends DialogFragment implements OnClic
 
         @Override
         public void onBindViewHolder(@NonNull NameHolder holder, int position) {
-            String city = cities.get(position);
-            holder.setCountryName(city);
+            String name = names.get(position);
+            holder.setName(name);
         }
 
         @Override
         public int getItemCount() {
-            return this.cities.size();
-        }
-
-        public void getFilter(CharSequence s) {
-            ArrayList<String> temp = (ArrayList<String>) filter(allCities, s.toString());
-            setCities(temp);
-//      notifyDataSetChanged();
-        }
-
-        private List<String> filter(List<String> dataList, String newText) {
-            newText = newText.toLowerCase();
-            String text;
-            ArrayList<String> filteredDataList = new ArrayList<>();
-            for (String dataFromDataList : dataList) {
-                text = dataFromDataList.toLowerCase();
-
-                if (text.contains(newText)) {
-                    filteredDataList.add(dataFromDataList);
-                }
-            }
-
-            return filteredDataList;
+            return this.names.size();
         }
     }
-
-
 }
