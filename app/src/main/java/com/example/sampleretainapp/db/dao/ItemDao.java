@@ -26,10 +26,10 @@ public interface ItemDao {
     @Query("DELETE FROM items")
     public void removeAllItems();
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     void insert(List<Item> items);
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     void insert(Item item);
 
     @Transaction
