@@ -85,14 +85,13 @@ public class Repository {
         Moshi moshi = new Moshi.Builder().build();
         Type type = Types.newParameterizedType(List.class, Item.class);
         JsonAdapter<List<Item>> adapter = moshi.adapter(type);
-        List<Item> listItems = new ArrayList<>();
+        List<Item> listItems;
         try {
             if (json != null) {
                 listItems = adapter.fromJson(json);
                 List<Item> finalListItems = listItems;
                 appExecutors.diskIO().execute(() -> {
                     database.runInTransaction(() -> {
-                        database.itemDao().removeAllItems();
                         for (Item item : finalListItems) {
                             DecimalFormat format = new DecimalFormat("0.#");
                             item.name = String.format(Locale.ENGLISH, "%s %s %s",
@@ -136,7 +135,6 @@ public class Repository {
                 }
 
                 appExecutors.diskIO().execute(() -> {
-                    mDatabase.cartDao().removeAllItems();
                     mDatabase.offerDao().removeAllOffers();
                     mDatabase.offerDao().insert(offerItems);
                 });
