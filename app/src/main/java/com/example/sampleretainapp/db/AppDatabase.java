@@ -21,7 +21,7 @@ import com.example.sampleretainapp.db.dao.ItemDao;
 import com.example.sampleretainapp.db.dao.OfferDao;
 import com.example.sampleretainapp.db.dao.OrderDao;
 
-@Database(entities = {OrderItem.class, CartItem.class, Offer.class, Item.class}, version = 4)
+@Database(entities = {OrderItem.class, CartItem.class, Offer.class, Item.class}, version = 5)
 @TypeConverters({CartItemsConvertor.class, DateConverter.class})
 public abstract class AppDatabase extends RoomDatabase {
 
