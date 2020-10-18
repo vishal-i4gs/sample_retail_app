@@ -1,22 +1,18 @@
 package com.example.sampleretainapp.Model;
 
-import java.util.Objects;
+import androidx.room.Entity;
+import androidx.room.ForeignKey;
+import androidx.room.PrimaryKey;
 
+@Entity(tableName = "cart",
+        foreignKeys = @ForeignKey(entity = Item.class,
+                parentColumns = "id",
+                childColumns = "itemId",
+                onDelete = ForeignKey.CASCADE))
 public class CartItem {
-    public Item item;
+
+    @PrimaryKey(autoGenerate = true)
+    public int cartId;
+    public String itemId;
     public int quantity;
-    public OfferItem offerItem;
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        CartItem cartItem = (CartItem) o;
-        return item.equals(cartItem.item);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), item, quantity, offerItem);
-    }
 }
