@@ -101,7 +101,6 @@ public class SearchListActivity extends BaseActivity implements ItemClickListene
     protected void showDialog() {
         SearchDialogFragment newFragment = SearchDialogFragment.newInstance(
                 appViewModel.getCurrentSearchTerm());
-        newFragment.cityList = appViewModel.getSearchTerms();
         newFragment.viewItemListener = new SearchDialogFragment.ViewItemListener() {
             @Override
             public void onItemClicked(String item) {
