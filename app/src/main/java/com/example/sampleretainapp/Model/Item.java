@@ -1,25 +1,21 @@
 package com.example.sampleretainapp.Model;
 
+import androidx.annotation.NonNull;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+
 import java.util.List;
 import java.util.Objects;
 
+@Entity(tableName = "items")
 public class Item {
-    public String name;
+
+    @PrimaryKey
+    @NonNull
     public String id;
+    public String name;
     public Float value;
     public String unit;
     public Integer price;
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Item item = (Item) o;
-        return id.equals(item.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), name, id, value, unit, price);
-    }
 }
