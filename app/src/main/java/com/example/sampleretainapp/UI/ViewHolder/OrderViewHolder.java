@@ -36,7 +36,7 @@ public class OrderViewHolder extends RecyclerView.ViewHolder {
     }
 
     public void setData(OrderItem orderItem) {
-        SimpleDateFormat format = new SimpleDateFormat("MMM dd, yyyy HH:mm a");
+        SimpleDateFormat format = new SimpleDateFormat("MMM dd, yyyy hh:mm aa");
         String date = format.format(orderItem.orderTime);
         orderTime.setText(date);
         orderPrice.setText(String.format(Locale.ENGLISH,"Rs %d",orderItem.orderPrice));
