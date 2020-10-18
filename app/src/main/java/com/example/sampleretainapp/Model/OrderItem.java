@@ -18,19 +18,6 @@ public class OrderItem implements Serializable {
     public Date orderTime;
     public int orderPrice;
     public int numberOfItems;
-    public List<CartItem> orderItems;
+    public List<CartItemOffer> orderItems;
     public boolean active;
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        OrderItem orderItem = (OrderItem) o;
-        return orderId.equals(orderItem.orderId);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(super.hashCode(), orderId, orderTime, orderPrice, numberOfItems, orderItems, active);
-    }
 }
