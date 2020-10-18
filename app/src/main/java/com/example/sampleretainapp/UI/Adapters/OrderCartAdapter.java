@@ -7,10 +7,10 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.sampleretainapp.Model.CartItem;
+import com.example.sampleretainapp.Model.CartItemOffer;
 import com.example.sampleretainapp.R;
 import com.example.sampleretainapp.UI.ViewHolder.OrderCartViewHolder;
-import com.example.sampleretainapp.UI.ViewModel.MainActivityViewModel;
+import com.example.sampleretainapp.UI.ViewModel.AppViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,15 +18,15 @@ import java.util.List;
 public class OrderCartAdapter extends
         RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    private List<CartItem> list = new ArrayList<>();
+    private List<CartItemOffer> list = new ArrayList<>();
 
-    private MainActivityViewModel mainActivityViewModel;
+    private AppViewModel appViewModel;
 
-    public OrderCartAdapter(MainActivityViewModel mainActivityViewModel) {
-        this.mainActivityViewModel = mainActivityViewModel;
+    public OrderCartAdapter(AppViewModel appViewModel) {
+        this.appViewModel = appViewModel;
     }
 
-    public void setList(List<CartItem> list) {
+    public void setList(List<CartItemOffer> list) {
         this.list = list;
         notifyDataSetChanged();
     }
@@ -44,7 +44,7 @@ public class OrderCartAdapter extends
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         OrderCartViewHolder viewHolder = (OrderCartViewHolder) holder;
-        viewHolder.setData(list.get(position),list.get(position).offerItem);
+        viewHolder.setData(list.get(position).item,list.get(position).cart, list.get(position).offer);
     }
 
     @Override
