@@ -9,6 +9,7 @@ import androidx.room.Transaction;
 
 import com.example.sampleretainapp.Model.Item;
 import com.example.sampleretainapp.Model.ItemOfferCart;
+import com.example.sampleretainapp.Model.ItemsFts;
 
 import java.util.List;
 
@@ -35,6 +36,14 @@ public interface ItemDao {
     @Transaction
     @Query("SELECT * FROM items WHERE name LIKE '%' || :search || '%'")
     LiveData<List<ItemOfferCart>> getItemsAndOffersBasedOnSearch(String search);
+
+    @Transaction
+    @Query("SELECT * FROM items JOIN itemsFts ON items.id == itemsFts.id WHERE itemsFts.name MATCH :search" )
+    LiveData<List<ItemOfferCart>> getItemsAndOffersBasedOnSearchFts(String search);
+
+    @Transaction
+    @Query("SELECT * FROM itemsFts" )
+    LiveData<List<ItemsFts>> getItemsAndOffersBasedOnSearch();
 
     @Transaction
     @Query("SELECT * FROM items where id = :id")
