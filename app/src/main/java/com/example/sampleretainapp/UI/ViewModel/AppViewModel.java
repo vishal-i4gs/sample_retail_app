@@ -88,11 +88,14 @@ public class AppViewModel extends AndroidViewModel {
     public LiveData<List<ItemOfferCart>> getSearchForNameMediator() {
         return mRepository.getSearchForNameMediator();
     }
+    public LiveData<List<String>> getSearchForNameTypeAheadMediator() {
+        return mRepository.getSearchForNameTypeAheadMediator();
+    }
     public void getSearchItem(String searchItem) {
         mRepository.getItemsForName(searchItem);
     }
-    public LiveData<List<String>> getSearchNames(String searchItem) {
-        return mRepository.getItemNamesForName(searchItem);
+    public void getSearchNames(String searchItem) {
+        mRepository.getItemNamesForName(searchItem);
     }
 
 

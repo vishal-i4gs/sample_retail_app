@@ -2,12 +2,12 @@ package com.example.sampleretainapp;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.text.TextUtils;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MediatorLiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
-import androidx.lifecycle.Transformations;
 
 import com.example.sampleretainapp.Model.CartItem;
 import com.example.sampleretainapp.Model.CartItemOffer;
@@ -27,7 +27,6 @@ import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
@@ -43,7 +42,13 @@ public class Repository {
     private LiveData<List<ItemOfferCart>> searchForName =
             new MutableLiveData<>();
 
+    private LiveData<List<ItemOfferCart>> searchForNameTypeAhead =
+            new MutableLiveData<>();
+
     private MediatorLiveData<List<ItemOfferCart>> searchForNameMediator =
+            new MediatorLiveData<>();
+
+    private MediatorLiveData<List<String>> searchForNameTypeAheadMediator =
             new MediatorLiveData<>();
 
     private AppDatabase mDatabase;
@@ -221,7 +226,7 @@ public class Repository {
 
     //Getters
     public LiveData<List<ItemOfferCart>> getItems() {
-        return mDatabase.itemDao().getItemsAndOffers();
+        return mDatabase.itemDao().getItemsOffersCart();
     }
 
     public LiveData<ItemOfferCart> getItemForId(String id) {
@@ -248,22 +253,36 @@ public class Repository {
         return searchForNameMediator;
     }
 
+    public MediatorLiveData<List<String>> getSearchForNameTypeAheadMediator() {
+        return searchForNameTypeAheadMediator;
+    }
+
     public void getItemsForName(String name) {
         if (searchForName != null) {
             searchForNameMediator.removeSource(searchForName);
         }
-        searchForName = mDatabase.itemDao().getItemsAndOffersBasedOnSearch(name);
+        searchForName = mDatabase.itemDao().getItemsAndOffersBasedOnSearchFts(fixQuery(name));
         searchForNameMediator.addSource(searchForName, itemOfferCarts
                 -> searchForNameMediator.postValue(itemOfferCarts));
     }
 
-    public LiveData<List<String>> getItemNamesForName(String name) {
-        return Transformations.map(mDatabase.itemDao().getItemsAndOffersBasedOnSearch(name), input -> {
-            List<String> strings = new ArrayList<>();
-            for (ItemOfferCart itemOfferCart : input) {
-                strings.add(itemOfferCart.item.name);
+    public void getItemNamesForName(String name) {
+        if(searchForNameTypeAhead != null) {
+            searchForNameTypeAheadMediator.removeSource(searchForNameTypeAhead);
+        }
+        if(TextUtils.isEmpty(name)) {
+            searchForNameTypeAhead = mDatabase.itemDao().getItemsOffersCart();
+        }
+        else {
+            searchForNameTypeAhead = mDatabase.itemDao().getItemsAndOffersBasedOnSearchFts(fixQuery(name));
+        }
+
+        searchForNameTypeAheadMediator.addSource(searchForNameTypeAhead, itemOfferCarts -> {
+            List<String> items = new ArrayList<>();
+            for (ItemOfferCart itemOfferCart : itemOfferCarts) {
+                items.add(itemOfferCart.item.name);
             }
-            return strings;
+            searchForNameTypeAheadMediator.postValue(items);
         });
     }
 
@@ -287,6 +306,10 @@ public class Repository {
             return null;
         }
         return json;
+    }
+
+    private static String fixQuery(String query) {
+        return query.trim().replaceAll("\\s+", "*") + "*";
     }
 
 }
