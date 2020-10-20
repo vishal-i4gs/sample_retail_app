@@ -118,8 +118,8 @@ public class SearchDialogFragment extends DialogFragment {
         super.onActivityCreated(savedInstanceState);
         appViewModel = new ViewModelProvider(this).get(
                 AppViewModel.class);
-        appViewModel.getSearchNames("").observe(
-                getViewLifecycleOwner(), strings -> nameAdapter.setCities(strings));
+        appViewModel.getSearchForNameTypeAheadMediator().observe(
+                getViewLifecycleOwner(), strings -> nameAdapter.setNames(strings));
         filterText.addTextChangedListener(filterTextWatcher);
         filterText.setText(searchString);
         filterText.setSelection(filterText.getText().length());
@@ -137,13 +137,9 @@ public class SearchDialogFragment extends DialogFragment {
         public void onTextChanged(CharSequence s, int start, int before,
                                   int count) {
             String currentSearchTerm = s.toString();
-            if (currentSearchTerm.length() > 0) {
-                appViewModel.getSearchNames(currentSearchTerm).observe(
-                        getViewLifecycleOwner(), strings -> nameAdapter.setCities(strings));
-                searchClearButton.setVisibility(View.VISIBLE);
-            } else {
-                searchClearButton.setVisibility(View.GONE);
-            }
+            currentSearchTerm.length();
+            appViewModel.getSearchNames(currentSearchTerm);
+            searchClearButton.setVisibility(View.VISIBLE);
         }
     };
 
@@ -173,9 +169,9 @@ public class SearchDialogFragment extends DialogFragment {
 
     public class NameAdapter extends RecyclerView.Adapter<NameHolder> {
 
-        void setCities(List<String> cities) {
+        void setNames(List<String> names) {
             this.names.clear();
-            this.names.addAll(cities);
+            this.names.addAll(names);
             notifyDataSetChanged();
         }
 
