@@ -3,7 +3,6 @@ package com.example.sampleretainapp.db;
 import android.content.Context;
 
 import androidx.annotation.VisibleForTesting;
-import androidx.lifecycle.MutableLiveData;
 import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
@@ -12,6 +11,7 @@ import androidx.room.TypeConverters;
 import com.example.sampleretainapp.AppExecutors;
 import com.example.sampleretainapp.Model.CartItem;
 import com.example.sampleretainapp.Model.Item;
+import com.example.sampleretainapp.Model.ItemsFts;
 import com.example.sampleretainapp.Model.Offer;
 import com.example.sampleretainapp.Model.OrderItem;
 import com.example.sampleretainapp.db.Convertors.CartItemsConvertor;
@@ -21,7 +21,7 @@ import com.example.sampleretainapp.db.dao.ItemDao;
 import com.example.sampleretainapp.db.dao.OfferDao;
 import com.example.sampleretainapp.db.dao.OrderDao;
 
-@Database(entities = {OrderItem.class, CartItem.class, Offer.class, Item.class}, version = 5)
+@Database(entities = {OrderItem.class, CartItem.class, Offer.class, Item.class, ItemsFts.class}, version = 6)
 @TypeConverters({CartItemsConvertor.class, DateConverter.class})
 public abstract class AppDatabase extends RoomDatabase {
 
@@ -57,8 +57,20 @@ public abstract class AppDatabase extends RoomDatabase {
     private static AppDatabase buildDatabase(final Context appContext) {
         return Room.databaseBuilder(appContext, AppDatabase.class, DATABASE_NAME)
                 .fallbackToDestructiveMigration()
+//                .addMigrations(MIGRATION_5_6)
                 .build();
     }
 
+//    private static final Migration MIGRATION_5_6 = new Migration(5, 6) {
+//
+//        @Override
+//        public void migrate(@NonNull SupportSQLiteDatabase database) {
+//            database.execSQL("CREATE VIRTUAL TABLE IF NOT EXISTS `itemsFts` USING FTS4("
+//                    + "`id` TEXT, `name` TEXT, content=`items`)");
+//            database.execSQL("INSERT INTO itemsFts (`id`, `name`) "
+//                    + "SELECT `id`, `name`, `description` FROM items");
+//
+//        }
+//    };
 
 }
