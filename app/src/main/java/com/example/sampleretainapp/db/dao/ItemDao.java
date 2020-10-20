@@ -18,7 +18,7 @@ public interface ItemDao {
 
     @Transaction
     @Query("SELECT * FROM items")
-    LiveData<List<ItemOfferCart>> getItemsAndOffers();
+    LiveData<List<ItemOfferCart>> getItemsOffersCart();
 
     @Transaction
     @Query("SELECT * FROM items")
