@@ -2,16 +2,13 @@ package com.example.sampleretainapp.db.Convertors;
 
 import androidx.room.TypeConverter;
 
-import com.example.sampleretainapp.Model.CartItem;
 import com.example.sampleretainapp.Model.CartItemOffer;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.Types;
-import com.squareup.moshi.adapters.Rfc3339DateJsonAdapter;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.util.Date;
 import java.util.List;
 
 public class CartItemsConvertor {
