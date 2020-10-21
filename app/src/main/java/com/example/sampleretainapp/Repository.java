@@ -27,11 +27,21 @@ import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 
+import me.xdrop.fuzzywuzzy.FuzzySearch;
+import me.xdrop.fuzzywuzzy.model.ExtractedResult;
+
 public class Repository {
+
+    public interface RepositoryInterface {
+        default void getSearchResults(List<ItemOfferCart> items) {
+        }
+    }
+
 
     private static final String TAG = Repository.class.getSimpleName();
     private static Repository shared;
@@ -39,17 +49,18 @@ public class Repository {
     private MutableLiveData<List<CategoryItem>> categories =
             new MutableLiveData<>();
 
-    private LiveData<List<ItemOfferCart>> searchForName =
+    private LiveData<List<ItemOfferCart>> searchForNameFuzzyLiveData =
             new MutableLiveData<>();
-
-    private LiveData<List<ItemOfferCart>> searchForNameTypeAhead =
-            new MutableLiveData<>();
-
-    private MediatorLiveData<List<ItemOfferCart>> searchForNameMediator =
+    private MediatorLiveData<List<ItemOfferCart>> searchForNameFuzzyMediator =
             new MediatorLiveData<>();
 
-    private MediatorLiveData<List<String>> searchForNameTypeAheadMediator =
+    private LiveData<List<ItemOfferCart>> searchForNameFtsLiveData =
+            new MutableLiveData<>();
+    private MediatorLiveData<List<ItemOfferCart>> searchForNameFtsMediator =
             new MediatorLiveData<>();
+
+    List<String> itemNames = new ArrayList<>();
+    HashMap<String,String> itemNamesIdHashmap = new HashMap<>();
 
     private AppDatabase mDatabase;
     private final AppExecutors appExecutors;
@@ -101,6 +112,8 @@ public class Repository {
                             DecimalFormat format = new DecimalFormat("0.#");
                             item.name = String.format(Locale.ENGLISH, "%s %s %s",
                                     item.name, format.format(item.value), item.unit);
+                            itemNames.add(item.name);
+                            itemNamesIdHashmap.put(item.name,item.id);
                         }
                         database.itemDao().insert(finalListItems);
                     });
@@ -146,7 +159,6 @@ public class Repository {
                 mDatabase.itemDao().getItems().removeObserver(this);
             }
         });
-
     }
 
     static Repository getInstance(final Context context, final AppDatabase mDatabase, final AppExecutors appExecutors) {
@@ -249,42 +261,110 @@ public class Repository {
         return categories;
     }
 
-    public MediatorLiveData<List<ItemOfferCart>> getSearchForNameMediator() {
-        return searchForNameMediator;
+    public MediatorLiveData<List<ItemOfferCart>> getSearchForNameFuzzyMediator() {
+        return searchForNameFuzzyMediator;
     }
 
-    public MediatorLiveData<List<String>> getSearchForNameTypeAheadMediator() {
-        return searchForNameTypeAheadMediator;
+    public MediatorLiveData<List<ItemOfferCart>> getSearchForNameFtsMediator() {
+        return searchForNameFtsMediator;
     }
 
-    public void getItemsForName(String name) {
-        if (searchForName != null) {
-            searchForNameMediator.removeSource(searchForName);
-        }
-        searchForName = mDatabase.itemDao().getItemsAndOffersBasedOnSearchFts(fixQuery(name));
-        searchForNameMediator.addSource(searchForName, itemOfferCarts
-                -> searchForNameMediator.postValue(itemOfferCarts));
-    }
-
-    public void getItemNamesForName(String name) {
-        if(searchForNameTypeAhead != null) {
-            searchForNameTypeAheadMediator.removeSource(searchForNameTypeAhead);
+    public void getItemsViaFtsSearch(String name) {
+        if(searchForNameFtsLiveData != null) {
+            searchForNameFtsMediator.removeSource(searchForNameFtsLiveData);
         }
         if(TextUtils.isEmpty(name)) {
-            searchForNameTypeAhead = mDatabase.itemDao().getItemsOffersCart();
+            searchForNameFtsLiveData = mDatabase.itemDao().getItemsOffersCart();
         }
         else {
-            searchForNameTypeAhead = mDatabase.itemDao().getItemsAndOffersBasedOnSearchFts(fixQuery(name));
+            searchForNameFtsLiveData = mDatabase.itemDao().getItemsAndOffersBasedOnSearchFts(fixQuery(name));
         }
+        searchForNameFtsMediator.addSource(searchForNameFtsLiveData, itemOfferCarts
+                -> searchForNameFtsMediator.postValue(itemOfferCarts));
+    }
 
-        searchForNameTypeAheadMediator.addSource(searchForNameTypeAhead, itemOfferCarts -> {
-            List<String> items = new ArrayList<>();
-            for (ItemOfferCart itemOfferCart : itemOfferCarts) {
-                items.add(itemOfferCart.item.name);
+    public void getItemsViaFuzzySearch(String name) {
+        if (searchForNameFuzzyLiveData != null) {
+            searchForNameFuzzyMediator.removeSource(searchForNameFuzzyLiveData);
+        }
+        searchForNameFuzzyLiveData = mDatabase.itemDao().getItemsAndOffersBasedOnSearchFts(fixQuery(name));
+        List<ExtractedResult> results = FuzzySearch.extractTop(name,itemNames,20);
+        appExecutors.diskIO().execute(() -> {
+            List<ItemOfferCart> itemOfferCarts = new ArrayList<>();
+            for(ExtractedResult result: results) {
+                if(result.getScore() > 40) {
+                    String id = itemNamesIdHashmap.get(result.getString());
+                    ItemOfferCart itemOfferCart = mDatabase.itemDao().getItemForIdSync(id);
+                    itemOfferCarts.add(itemOfferCart);
+                }
             }
-            searchForNameTypeAheadMediator.postValue(items);
+            appExecutors.mainThread().execute(new Runnable() {
+                @Override
+                public void run() {
+                    searchForNameFuzzyMediator.postValue(itemOfferCarts);
+                }
+            });
         });
     }
+
+    public LiveData<List<ItemOfferCart>> getItemsViaFuzzySearchLiveData(String name) {
+        MutableLiveData<List<ItemOfferCart>> listLiveData = new MutableLiveData<>();
+        List<ExtractedResult> results = FuzzySearch.extractTop(name,itemNames,20);
+        appExecutors.diskIO().execute(() -> {
+            List<ItemOfferCart> itemOfferCarts = new ArrayList<>();
+            for(ExtractedResult result: results) {
+                if(result.getScore() > 40) {
+                    String id = itemNamesIdHashmap.get(result.getString());
+                    ItemOfferCart itemOfferCart = mDatabase.itemDao().getItemForIdSync(id);
+                    itemOfferCarts.add(itemOfferCart);
+                }
+            }
+            appExecutors.mainThread().execute(new Runnable() {
+                @Override
+                public void run() {
+                    listLiveData.postValue(itemOfferCarts);
+                }
+            });
+        });
+        return listLiveData;
+    }
+
+    //    public void getItemsForName(String name) {
+//        if (searchForName != null) {
+//            searchForNameMediator.removeSource(searchForName);
+//        }
+//        searchForName = mDatabase.itemDao().getItemsAndOffersBasedOnSearchFts(fixQuery(name));
+//        searchForNameMediator.addSource(searchForName, itemOfferCarts
+//                -> searchForNameMediator.postValue(itemOfferCarts));
+//    }
+
+
+//    public void getItemsForName(String name, RepositoryInterface repositoryInterface) {
+//        if (searchForName != null) {
+//            searchForNameMediator.removeSource(searchForName);
+//        }
+//        searchForName = mDatabase.itemDao().getItemsAndOffersBasedOnSearchFts(fixQuery(name));
+//        List<ExtractedResult> results = FuzzySearch.extractAll(name,itemNames);
+//        appExecutors.diskIO().execute(() -> {
+//            List<ItemOfferCart> itemOfferCarts = new ArrayList<>();
+//            for(ExtractedResult result: results) {
+//                if(result.getScore() > 70) {
+//                    String id = itemNamesIdHashmap.get(result.getString());
+//                    ItemOfferCart itemOfferCart = mDatabase.itemDao().getItemForIdSync(id);
+//                    itemOfferCarts.add(itemOfferCart);
+//                }
+//            }
+//            appExecutors.mainThread().execute(new Runnable() {
+//                @Override
+//                public void run() {
+//                    repositoryInterface.getSearchResults(itemOfferCarts);
+//                }
+//            });
+//        });
+////        searchForNameMediator.addSource(searchForName, itemOfferCarts
+////                -> searchForNameMediator.postValue(itemOfferCarts));
+//    }
+
 
     //Helpers
     public static float randFloat(float min, float max) {
