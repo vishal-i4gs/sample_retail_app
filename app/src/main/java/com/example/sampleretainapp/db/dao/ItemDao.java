@@ -48,4 +48,8 @@ public interface ItemDao {
     @Transaction
     @Query("SELECT * FROM items where id = :id")
     LiveData<ItemOfferCart> getItemForId(String id);
+
+    @Transaction
+    @Query("SELECT * FROM items where id = :id")
+    ItemOfferCart getItemForIdSync(String id);
 }
