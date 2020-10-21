@@ -8,11 +8,13 @@ import android.view.View;
 import android.widget.TextView;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.sampleretainapp.Model.Item;
+import com.example.sampleretainapp.Model.ItemOfferCart;
 import com.example.sampleretainapp.R;
 import com.example.sampleretainapp.UI.Adapters.ListAdapter;
 import com.example.sampleretainapp.UI.Fragments.SearchDialogFragment;
@@ -20,6 +22,7 @@ import com.example.sampleretainapp.UI.ItemClickListener;
 import com.example.sampleretainapp.UI.ViewModel.AppViewModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
+import java.util.List;
 import java.util.Locale;
 
 public class SearchListActivity extends BaseActivity implements ItemClickListener {
@@ -56,6 +59,14 @@ public class SearchListActivity extends BaseActivity implements ItemClickListene
         cartItemCount.setVisibility(View.GONE);
         fab.setVisibility(View.GONE);
         appViewModel.getCartItems().observe(this, cartItems -> {
+//            appViewModel.getItemsViaFuzzySearch(appViewModel.getCurrentSearchTerm());
+            appViewModel.getFuzzySearchMediatorLive(appViewModel.getCurrentSearchTerm()).observe(
+                    this, new Observer<List<ItemOfferCart>>() {
+                        @Override
+                        public void onChanged(List<ItemOfferCart> itemOfferCarts) {
+                            listAdapter.setList(itemOfferCarts);
+                        }
+                    });
             if (cartItems.size() == 0) {
                 cartItemCount.setVisibility(View.GONE);
                 fab.setVisibility(View.GONE);
@@ -71,18 +82,29 @@ public class SearchListActivity extends BaseActivity implements ItemClickListene
         listItemView.setItemAnimator(null);
         listItemView.setAdapter(listAdapter);
 
-        appViewModel.getSearchForNameMediator().observe(this, itemOfferCarts -> {
-            if (itemOfferCarts.size() == 0) {
-                orderEmptyTextView.setVisibility(View.VISIBLE);
-            } else {
-                orderEmptyTextView.setVisibility(View.GONE);
-            }
-            listAdapter.setList(itemOfferCarts);
-        });
+//        appViewModel.getSearchForNameFuzzyMediator().observe(this, itemOfferCarts -> {
+//            if (itemOfferCarts.size() == 0) {
+//                orderEmptyTextView.setVisibility(View.VISIBLE);
+//            } else {
+//                orderEmptyTextView.setVisibility(View.GONE);
+//            }
+//            listAdapter.setList(itemOfferCarts);
+//        });
+
+//        appViewModel.getSearchForNameFtsMediator().observe(this, itemOfferCarts -> {
+//            if (itemOfferCarts.size() == 0) {
+//                orderEmptyTextView.setVisibility(View.VISIBLE);
+//            } else {
+//                orderEmptyTextView.setVisibility(View.GONE);
+//            }
+//            listAdapter.setList(itemOfferCarts);
+//        });
 
         if (savedInstanceState == null) {
             handleIntent(getIntent());
         }
+
+        editText.setText(appViewModel.getCurrentSearchTerm());
     }
 
     @Override
@@ -94,23 +116,20 @@ public class SearchListActivity extends BaseActivity implements ItemClickListene
     private void handleIntent(Intent intent) {
         appViewModel.setCurrentSearchTerm(intent.getStringExtra("search_term"));
         editText.setText(appViewModel.getCurrentSearchTerm());
-        appViewModel.getSearchItem(appViewModel.getCurrentSearchTerm());
+//        appViewModel.getItemsViaFtsSearch(appViewModel.getCurrentSearchTerm());
+//        appViewModel.getItemsViaFuzzySearch(appViewModel.getCurrentSearchTerm());
+        appViewModel.getFuzzySearchMediatorLive(appViewModel.getCurrentSearchTerm()).observe(
+                this, new Observer<List<ItemOfferCart>>() {
+                    @Override
+                    public void onChanged(List<ItemOfferCart> itemOfferCarts) {
+                        listAdapter.setList(itemOfferCarts);
+                    }
+                });
     }
 
     @Override
-    protected void showDialog() {
-        SearchDialogFragment newFragment = SearchDialogFragment.newInstance(
-                appViewModel.getCurrentSearchTerm());
-        newFragment.viewItemListener = new SearchDialogFragment.ViewItemListener() {
-            @Override
-            public void onItemClicked(String item) {
-                Intent intent = new Intent(SearchListActivity.this,
-                        SearchListActivity.class);
-                intent.putExtra("search_term", item);
-                startActivity(intent);
-            }
-        };
-        newFragment.show(getSupportFragmentManager(), "autoCompleteFragment");
+    protected void showDialog(String searchString) {
+        super.showDialog(appViewModel.getCurrentSearchTerm());
     }
 
     @Override
