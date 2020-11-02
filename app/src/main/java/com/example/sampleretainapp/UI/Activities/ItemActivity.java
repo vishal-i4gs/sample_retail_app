@@ -1,6 +1,8 @@
 package com.example.sampleretainapp.UI.Activities;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -8,6 +10,7 @@ import android.os.Bundle;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.StrikethroughSpan;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -38,6 +41,12 @@ public class ItemActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_item);
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        if(getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("");
+        }
 
         itemName = findViewById(R.id.item_name);
         imageName = findViewById(R.id.image_item_name);
@@ -108,6 +117,14 @@ public class ItemActivity extends AppCompatActivity {
                     offerItem.minQuantity,
                     (int) (offerItem.percentageDiscount * 100)));
         }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == android.R.id.home) { // use android.R.id
+            finish();
+        }
+        return super.onOptionsItemSelected(item);
     }
 
 }

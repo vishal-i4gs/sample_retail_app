@@ -21,10 +21,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatTextView;
 import androidx.fragment.app.DialogFragment;
+import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.sampleretainapp.Model.ItemOfferCart;
 import com.example.sampleretainapp.R;
 import com.example.sampleretainapp.UI.ViewModel.AppViewModel;
 
@@ -83,7 +85,7 @@ public class SearchDialogFragment extends DialogFragment {
 
         filterText.setOnEditorActionListener((textView, actionId, keyEvent) -> {
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-                viewItemListener.onItemClicked(textView.getText().toString());
+                viewItemListener.onSearchClicked(textView.getText().toString());
                 dismiss();
                 return true;
             }
@@ -118,8 +120,10 @@ public class SearchDialogFragment extends DialogFragment {
         super.onActivityCreated(savedInstanceState);
         appViewModel = new ViewModelProvider(this).get(
                 AppViewModel.class);
-        appViewModel.getSearchForNameTypeAheadMediator().observe(
-                getViewLifecycleOwner(), strings -> nameAdapter.setNames(strings));
+//        appViewModel.getSearchForNameFtsMediator().observe(
+//                getViewLifecycleOwner(), strings -> nameAdapter.setNames(strings));
+//        appViewModel.getSearchForNameFuzzyMediator().observe(
+//                getViewLifecycleOwner(), strings -> nameAdapter.setNames(strings));
         filterText.addTextChangedListener(filterTextWatcher);
         filterText.setText(searchString);
         filterText.setSelection(filterText.getText().length());
@@ -137,45 +141,60 @@ public class SearchDialogFragment extends DialogFragment {
         public void onTextChanged(CharSequence s, int start, int before,
                                   int count) {
             String currentSearchTerm = s.toString();
-            currentSearchTerm.length();
-            appViewModel.getSearchNames(currentSearchTerm);
+            if(currentSearchTerm.length() > 1) {
+//                appViewModel.getItemsViaFtsSearch(currentSearchTerm);
+//                appViewModel.getItemsViaFuzzySearch(currentSearchTerm);
+                appViewModel.getFuzzySearchMediatorLive(currentSearchTerm).observe(
+                        getViewLifecycleOwner(), new Observer<List<ItemOfferCart>>() {
+                    @Override
+                    public void onChanged(List<ItemOfferCart> itemOfferCarts) {
+                        nameAdapter.setNames(itemOfferCarts);
+                    }
+                });
+            }
+            else {
+                nameAdapter.setNames(new ArrayList<>());
+            }
             searchClearButton.setVisibility(View.VISIBLE);
         }
     };
 
     public interface ViewItemListener {
-        public void onItemClicked(String item);
+        public void onSearchClicked(String searchString);
+        public void onItemClicked(String itemId);
     }
 
     public class NameHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        AppCompatTextView countryName;
+        AppCompatTextView itemName;
+        ItemOfferCart itemOfferCart;
 
         public NameHolder(Context context, @NonNull View itemView) {
             super(itemView);
-            this.countryName = itemView.findViewById(R.id.auto_complete_title);
+            this.itemName = itemView.findViewById(R.id.auto_complete_title);
             itemView.setOnClickListener(this);
         }
 
-        public void setName(String name) {
-            this.countryName.setText(name);
+        public void setItem(ItemOfferCart itemOfferCart) {
+            this.itemOfferCart = itemOfferCart;
+            this.itemName.setText(itemOfferCart.item.name);
         }
 
         @Override
         public void onClick(View view) {
-            viewItemListener.onItemClicked(countryName.getText().toString());
+            viewItemListener.onItemClicked(itemOfferCart.item.id);
             SearchDialogFragment.this.dismiss();
         }
     }
 
     public class NameAdapter extends RecyclerView.Adapter<NameHolder> {
 
-        void setNames(List<String> names) {
-            this.names.clear();
-            this.names.addAll(names);
+        void setNames(List<ItemOfferCart> items) {
+            this.items.clear();
+            this.items.addAll(items);
             notifyDataSetChanged();
         }
 
-        private ArrayList<String> names = new ArrayList<>();
+        private ArrayList<ItemOfferCart> items = new ArrayList<>();
 
         private Context context;
         private int itemResource;
@@ -196,13 +215,12 @@ public class SearchDialogFragment extends DialogFragment {
 
         @Override
         public void onBindViewHolder(@NonNull NameHolder holder, int position) {
-            String name = names.get(position);
-            holder.setName(name);
+            holder.setItem(items.get(position));
         }
 
         @Override
         public int getItemCount() {
-            return this.names.size();
+            return this.items.size();
         }
     }
 }

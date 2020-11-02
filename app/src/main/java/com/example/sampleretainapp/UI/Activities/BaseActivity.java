@@ -84,7 +84,7 @@ public class BaseActivity extends AppCompatActivity {
 
             }
         });
-        editText.setOnClickListener(view -> showDialog());
+        editText.setOnClickListener(view -> showDialog(""));
     }
 
 
@@ -105,14 +105,21 @@ public class BaseActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    protected void showDialog() {
-        SearchDialogFragment newFragment = SearchDialogFragment.newInstance("");
+    protected void showDialog(String searchString) {
+        SearchDialogFragment newFragment = SearchDialogFragment.newInstance(searchString);
         newFragment.viewItemListener = new SearchDialogFragment.ViewItemListener() {
             @Override
-            public void onItemClicked(String item) {
+            public void onSearchClicked(String searchString) {
                 Intent intent = new Intent(BaseActivity.this,
                         SearchListActivity.class);
-                intent.putExtra("search_term", item);
+                intent.putExtra("search_term", searchString);
+                startActivity(intent);
+            }
+
+            @Override
+            public void onItemClicked(String itemId) {
+                Intent intent = new Intent(BaseActivity.this, ItemActivity.class);
+                intent.putExtra("itemId", itemId);
                 startActivity(intent);
             }
         };

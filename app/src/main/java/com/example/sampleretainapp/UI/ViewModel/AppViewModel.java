@@ -3,8 +3,10 @@ package com.example.sampleretainapp.UI.ViewModel;
 import android.app.Application;
 
 import androidx.annotation.NonNull;
+import androidx.arch.core.util.Function;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.Transformations;
 
 import com.example.sampleretainapp.App;
 import com.example.sampleretainapp.Model.CartItemOffer;
@@ -85,18 +87,25 @@ public class AppViewModel extends AndroidViewModel {
     public void setCurrentSearchTerm(String searchTerm) {
         this.currentSearchTerm = searchTerm;
     }
-    public LiveData<List<ItemOfferCart>> getSearchForNameMediator() {
-        return mRepository.getSearchForNameMediator();
+
+    public LiveData<List<ItemOfferCart>> getSearchForNameFuzzyMediator() {
+        return mRepository.getSearchForNameFuzzyMediator();
     }
-    public LiveData<List<String>> getSearchForNameTypeAheadMediator() {
-        return mRepository.getSearchForNameTypeAheadMediator();
+    public LiveData<List<ItemOfferCart>> getSearchForNameFtsMediator() {
+        return mRepository.getSearchForNameFtsMediator();
     }
-    public void getSearchItem(String searchItem) {
-        mRepository.getItemsForName(searchItem);
+
+    public void getItemsViaFuzzySearch(String searchItem) {
+        mRepository.getItemsViaFuzzySearch(searchItem);
     }
-    public void getSearchNames(String searchItem) {
-        mRepository.getItemNamesForName(searchItem);
+    public void getItemsViaFtsSearch(String searchItem) {
+        mRepository.getItemsViaFtsSearch(searchItem);
     }
+
+    public LiveData<List<ItemOfferCart>> getFuzzySearchMediatorLive(String name) {
+        return mRepository.getItemsViaFuzzySearchLiveData(name);
+    }
+
 
 
 }
